@@ -29,10 +29,14 @@ jobs:
           node --check dist/battle-fx.js
           node --check dist/progression.js
           node --check dist/campaign.js
+          node --check dist/combat-kit.js
+          node --check dist/ability-fx.js
+          node --check dist/campaign-extras.js
       - name: Verify combat and full campaign
         run: |
           node test-engine.cjs
           node test-progression.cjs
+          node test-tactics.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload website

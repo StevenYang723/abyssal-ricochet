@@ -30,7 +30,7 @@ const customized=new AbyssEngine();customized.reset({stages:waves(QUESTS[0]),par
 function simulate(g){let n=0;while(g.mode==='moving'&&n++<900)g.update(1/120);assert(n<900);}
 // Play every quest, including the final boss, through the actual physics engine.
 const summary=[];
-for(const q of QUESTS){const level=Math.max(1,q.level),party=CATALOG.slice(0,4).map(h=>stats(h,{level,awake:Math.floor((level-1)/20)}));const g=new AbyssEngine();g.reset({stages:waves(q),party,maxHp:party.reduce((n,h)=>n+h.hp,0)});let turns=0;
+for(const q of QUESTS){const level=Math.max(1,q.level),party=CATALOG.slice(0,4).map(h=>stats(h,{level,awake:Math.floor((level-1)/20)}));const g=new AbyssEngine();g.reset({tactical:true,stages:waves(q),party,maxHp:party.reduce((n,h)=>n+h.hp,0)});let turns=0;
  while(g.mode!=='victory'&&g.mode!=='defeat'&&turns<60){if(g.mode==='cleared'){g.nextStage();continue;}let bestAngle=0,bestValue=-Infinity;for(let i=0;i<48;i++){const sim=new AbyssEngine();for(const[k,v]of Object.entries(g))if(typeof v!=='function')sim[k]=JSON.parse(JSON.stringify(v));if(sim.energy===100)sim.armUltimate();const a=i*Math.PI/24;sim.launch(Math.cos(a),Math.sin(a));simulate(sim);const value=g.stageHp-sim.stageHp+Math.max(0,sim.hp-g.hp)*.25+(sim.mode==='cleared'||sim.mode==='victory'?1000:0);if(value>bestValue){bestValue=value;bestAngle=a;}}if(g.energy===100)g.armUltimate();g.launch(Math.cos(bestAngle),Math.sin(bestAngle));simulate(g);turns++;}
  assert.equal(g.mode,'victory',`Quest ${q.number} must be winnable at its recommended level`);summary.push({quest:q.number,level,shots:g.totalShots,hp:g.hp,sanity:g.sanity});}
 for(const h of CATALOG)assert(fs.existsSync(`dist/assets/${h.art}-v2.jpg`));

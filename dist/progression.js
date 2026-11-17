@@ -1,6 +1,7 @@
 (function(root){
   'use strict';
   const base=typeof module!=='undefined'&&module.exports?require('./engine.js'):root;
+  const kit=typeof module!=='undefined'&&module.exports?require('./combat-kit.js'):root.AbyssKit;
   const extra=[
     ['aster','阿斯特拉','占星师',5,'潮','#8fc9ed',154,0,'群星坠落','她用失落星图，计算神明下一次睁眼的时间。'],
     ['rook','罗克','猎魔人',4,'焰','#dc9479',185,1,'猎魔银弩','枪声之后，雾里响起了第二次心跳。'],
@@ -12,6 +13,8 @@
     ['ren','莲','封印剑士',5,'焰','#de858b',200,3,'无明斩', '他以自己的名字，封住了刀中的恶梦。']
   ];
   const CATALOG=[...base.HEROES.map((h,i)=>({...h,key:h.art,rarity:i===0?5:4,element:['森','潮','辉','幽'][i],supportKind:i})),...extra.map(([key,name,role,rarity,element,color,attack,supportKind,skill,lore])=>({key,art:key,name,role,rarity,element,color,attack,supportKind,skill,lore,type:['aster','nyra','ren'].includes(key)?'贯通':'反射',description:['追击生命最低的敌人。','对全体敌人发起远程攻击。','恢复生命与理智，并攻击最近的敌人。','集中攻击生命最高的敌人。'][supportKind]}))];
+  for(const h of CATALOG){const k=kit.SKILLS[h.key];h.skill=k.support;h.ultimate=k.ultimate;h.description=k.text;h.ultimateDescription=k.ultText;h.combatRole=k.role;h.formTitle=k.form;h.color=k.color;}
+  const portrait=h=>`assets/${h.key||h.art}-${h.awake>0?'awakened':'base'}-v4.jpg`;
   const CHAPTERS=[{name:'雾锁印斯茅斯',en:'INNSMOUTH',story:'一封潮湿的信，把你带到这座没有钟声的港口。',color:'#7fc7b0'}, {name:'沉没的圣堂',en:'THE DROWNED CHAPEL',story:'钟楼沉入海底之后，祷告仍然没有停止。',color:'#a6b8e4'}, {name:'群星归位之夜',en:"R’LYEH",story:'在梦与现实的缝隙中，旧日之城终于浮出水面。',color:'#d2a6cb'}];
   const names=['潮湿的来信','没有归途的街','雾港的凝视者','深海阶梯','无声的祷告','圣堂守门人','异星回廊','群星之门','旧日支配者'];
   const QUESTS=names.map((name,i)=>({id:i,name,chapter:Math.floor(i/3),number:`${Math.floor(i/3)+1}-${i%3+1}`,cost:6+i*2,level:1+i*4,power:700+i*200,gold:700+i*220,exp:18+i*6,gems:150+i*25,sigils:1+Math.floor(i/3),boss:i%3===2}));
@@ -32,8 +35,8 @@
     // A battle interrupted by a refresh is abandoned; no pending result can be claimed twice.
     return s;
   }
-  function stats(h,owned){const o=owned||{level:1,awake:0,luck:1};const scale=1+(o.level-1)*.045+o.awake*.12;const description=['追击生命最低的敌人，造成 '+Math.round(180*scale)+' 伤害。','对全体敌人造成 '+Math.round(100*scale)+' 伤害。','恢复 '+Math.round(500*scale)+' 生命、5 理智，并攻击最近的敌人。','对生命最高的敌人造成 '+Math.round(240*scale)+' 伤害。'][h.supportKind];return {...h,description,level:o.level,awake:o.awake,luck:o.luck,attack:Math.round(h.attack*scale),hp:Math.round((1800+h.rarity*70)*scale),supportScale:scale};}
-  function waves(q){const c=q.chapter,scale=.62+q.id*.23;return [0,1,2].map((wave)=>{const original=base.STAGES[c];const modifier=scale*(.72+wave*.20);return {...original,name:`${q.name} · ${wave===2?'首领':`第 ${wave+1} 战`}`,title:wave===2?original.title:['巡游的深潜者','深渊的眷属'][wave],reward:100, enemies:original.enemies.map((e,i)=>({...e,sprite:i===0&&wave===2?['watcher','warden','boss'][c]:'minion',hp:Math.round(e.hp*modifier),damage:Math.round(e.damage*(.7+q.id*.13)),art:wave<2&&i===0?'deep-one':e.art,name:wave<2&&i===0?'精英深潜者':e.name,x:wave===1?500-e.x:e.x}))};});}
+  function stats(h,owned){const o=owned||{level:1,awake:0,luck:1},scale=1+(o.level-1)*.045+o.awake*.12,k=kit.SKILLS[h.key];return {...h,description:k.text,skill:k.support,ultimate:k.ultimate,ultimateDescription:k.ultText,formTitle:k.form,level:o.level,awake:o.awake,luck:o.luck,attack:Math.round(h.attack*scale),hp:Math.round((1800+h.rarity*70)*scale),supportScale:scale};}
+  function waves(q){const c=q.chapter,scale=.62+q.id*.23;return [0,1,2].map((wave)=>{const original=base.STAGES[c];const modifier=scale*(.72+wave*.20);return {...original,name:`${q.name} · ${wave===2?'首领':`第 ${wave+1} 战`}`,title:wave===2?original.title:['巡游的深潜者','深渊的眷属'][wave],reward:100, enemies:original.enemies.map((e,i)=>({...e,sprite:i===0&&wave===2?['watcher','warden','boss'][c]:'minion',bossKind:i===0&&wave===2?['watcher','warden','cthulhu'][c]:undefined,counter:i===0&&wave===2?1:e.cooldown,hp:Math.round(e.hp*modifier*(i===0&&wave===2?1.9:1)),damage:Math.round(e.damage*(.7+q.id*.13)),art:wave<2&&i===0?'deep-one':e.art,name:wave<2&&i===0?'精英深潜者':e.name,x:wave===1?500-e.x:e.x}))};});}
   class Campaign{
     constructor(storage,now=Date.now){this.storage=storage;this.now=now;this.saveError=false;let raw;try{raw=JSON.parse(storage?.getItem(KEY)||'null');}catch{}this.state=normalize(raw,this.now());this.tick();}
     save(){try{this.storage?.setItem(KEY,JSON.stringify(this.state));this.saveError=false;}catch{this.saveError=true;}return !this.saveError;}
@@ -63,7 +66,7 @@
     awaken(key){const s=this.state,o=s.owned[key];if(!o)throw new Error('尚未拥有这位调查员');if(o.awake>=4)throw new Error('已完成全部觉醒');if(o.level<20+o.awake*20)throw new Error('达到当前等级上限后可觉醒');const cost=3*(o.awake+1),gold=2000*(o.awake+1);if(s.sigils<cost||s.gold<gold)throw new Error(`需要 ${cost} 古印与 ${gold} 金币`);s.sigils-=cost;s.gold-=gold;o.awake++;this.save();}
     exchangeShards(key){const o=this.state.owned[key];if(!o||o.shards<20)throw new Error('需要 20 枚该角色魂片');o.shards-=20;this.state.exp+=30;this.save();}
     equip(key,slot){const s=this.state;if(!s.owned[key]||!Number.isInteger(slot)||slot<0||slot>3)throw new Error('无效的编队选择');const old=s.team.indexOf(key);if(old>=0)[s.team[old],s.team[slot]]=[s.team[slot],s.team[old]];else s.team[slot]=key;this.save();}
-    begin(id){const q=QUESTS[id],s=this.state;this.tick();if(s.activeRun)throw new Error('请先完成或退出当前调查');if(!q||!this.unlocked(id))throw new Error('完成前一关后解锁');if(s.stamina<q.cost)throw new Error('体力不足，每 5 分钟恢复 1 点，也可领取补给或在商店补充');if(s.stamina===60)s.staminaAt=this.now();s.stamina-=q.cost;s.activeRun={quest:id,token:`${this.now()}-${Math.random().toString(36).slice(2)}`};this.save();return {stages:waves(q),party:this.party(),maxHp:this.party().reduce((n,h)=>n+h.hp,0)};}
+    begin(id){const q=QUESTS[id],s=this.state;this.tick();if(s.activeRun)throw new Error('请先完成或退出当前调查');if(!q||!this.unlocked(id))throw new Error('完成前一关后解锁');if(s.stamina<q.cost)throw new Error('体力不足，每 5 分钟恢复 1 点，也可领取补给或在商店补充');if(s.stamina===60)s.staminaAt=this.now();s.stamina-=q.cost;s.activeRun={quest:id,token:`${this.now()}-${Math.random().toString(36).slice(2)}`};this.save();return {tactical:true,stages:waves(q),party:this.party(),maxHp:this.party().reduce((n,h)=>n+h.hp,0)};}
     finish(won,details={}){const s=this.state,run=s.activeRun;if(!run)return null;s.activeRun=null;
       if(!won){this.save();return {won:false};}const q=QUESTS[run.quest],first=!s.clears[q.id],stars=1+(details.hpRatio>=.5?1:0)+(details.shots<=16?1:0),old=s.clears[q.id];
       const luckGold=Math.floor(q.gold*(s.owned[s.team[0]].luck-1)*.01),reward={won:true,first,stars,gold:q.gold+luckGold,luckGold,exp:q.exp,gems:first?q.gems:0,sigils:q.sigils};s.gold+=reward.gold;s.exp+=reward.exp;s.gems+=reward.gems;s.sigils+=reward.sigils;s.rankExp+=100+q.id*30;s.stats.wins++;
@@ -76,5 +79,5 @@
     dailyReady(){const d=new Date(this.now());return this.state.daily!==`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
     buy(item){const s=this.state;if(item==='energy'){this.tick();if(s.stamina===60)throw new Error('体力已满');if(s.gems<50)throw new Error('星晶不足');s.gems-=50;s.stamina=Math.min(60,s.stamina+30);}else if(item==='exp'){if(s.gold<1000)throw new Error('金币不足');s.gold-=1000;s.exp+=30;}else if(item==='sigil'){if(s.gems<100)throw new Error('星晶不足');s.gems-=100;s.sigils+=3;}else throw new Error('未知商品');this.save();}
   }
-  const api={Campaign,CATALOG,CHAPTERS,QUESTS,MISSIONS,KEY,fresh,normalize,stats,waves};if(typeof module!=='undefined'&&module.exports)module.exports=api;else Object.assign(root,{AbyssProgress:api});
+  const api={portrait,Campaign,CATALOG,CHAPTERS,QUESTS,MISSIONS,KEY,fresh,normalize,stats,waves};if(typeof module!=='undefined'&&module.exports)module.exports=api;else Object.assign(root,{AbyssProgress:api});
 })(typeof window!=='undefined'?window:globalThis);
