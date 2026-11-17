@@ -2,10 +2,10 @@
 /* Presentation-only renderer: fixed-step combat rules remain in engine.js. */
 const BattleFX={
   hitStop:0,slow:0,flash:0,trauma:0,impacts:[],shards:[],deaths:[],afterimages:[],jolts:new Map(),supportTimer:null,
-  atlas:new Image(),boss:new Image(),minion:new Image(),masks:new Map(),audioNoise:null,
+  atlas:new Image(),boss:new Image(),minion:new Image(),watcher:new Image(),warden:new Image(),masks:new Map(),audioNoise:null,
   init(){
-    this.boss.src='assets/boss-v2.png';this.minion.src='assets/deep-one-v2.png';
-    for(const [key,img]of [['boss',this.boss],['minion',this.minion]])img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const x=c.getContext('2d');x.drawImage(img,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#fff7d2';x.fillRect(0,0,c.width,c.height);this.masks.set(key,c);};
+    this.boss.src='assets/boss-v2.png';this.minion.src='assets/deep-one-v2.png';this.watcher.src='assets/watcher-v3.png';this.warden.src='assets/warden-v3.png';
+    for(const [key,img]of [['boss',this.boss],['minion',this.minion],['watcher',this.watcher],['warden',this.warden]])img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const x=c.getContext('2d');x.drawImage(img,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#fff7d2';x.fillRect(0,0,c.width,c.height);this.masks.set(key,c);};
   },
   physicsTime(dt){if(this.hitStop>0){this.hitStop=Math.max(0,this.hitStop-dt);return 0;}if(this.slow>0){this.slow-=dt;return dt*.4;}return dt;},
   reset(){this.hitStop=0;this.slow=0;this.flash=0;this.trauma=0;this.impacts=[];this.shards=[];this.deaths=[];this.afterimages=[];this.jolts.clear();clearTimeout(this.supportTimer);$('supportCall').classList.remove('visible');$('supportCall').textContent='';$('skillCutin').classList.remove('play');},
@@ -32,16 +32,16 @@ const BattleFX={
       const dead=game.enemies.find(x=>x.hp<=0&&x.name===e.name&&x.x===e.x&&x.y===e.y);if(dead)this.deaths.push({...dead,life:.7,max:.7});this.hitStop=Math.max(this.hitStop,reduced?0:.08);this.slow=reduced?0:.13;this.trauma+=5;this.shatter(e.x,e.y,'#dbf6be',45,1.5);this.impacts.push({x:e.x,y:e.y,life:.6,max:.6,color:'#edecb2',power:2,angle:0});this.impactAudio(1.35);
     }
     if(e.type==='wall'){this.shatter(e.x,e.y,'#e6cf93',7,.55);this.impacts.push({x:e.x,y:e.y,life:.18,max:.18,color:'#cfe8a8',power:.3,angle:0});this.impactAudio(.22,true);}
-    if(e.type==='support'){const h=HEROES[e.hero];$('supportCall').textContent=`援护发动 · ${h.name}「${h.skill}」`;$('supportCall').style.borderColor=h.color;$('supportCall').classList.add('visible');clearTimeout(this.supportTimer);this.supportTimer=setTimeout(()=>$('supportCall').classList.remove('visible'),1500);this.shatter(e.x,e.y,h.color,15,.6);}
-    if(e.type==='ultimate'){this.hitStop=reduced?0:.55;this.slow=reduced?0:.6;this.flash=reduced?0:.16;this.trauma=13;const c=$('skillCutin');c.querySelector('.cutin-portrait').style.setProperty('--portrait-image',`url("assets/${HEROES[game.active].art}-v2.jpg")`);this.punch(c,'play');this.impacts.push({x:250,y:280,life:1.2,max:1.2,color:'#e7ffc2',power:5,angle:0,ritual:true});this.impactAudio(1.5,true);}
+    if(e.type==='support'){const h=game.heroes[e.hero];$('supportCall').textContent=`援护发动 · ${h.name}「${h.skill}」`;$('supportCall').style.borderColor=h.color;$('supportCall').classList.add('visible');clearTimeout(this.supportTimer);this.supportTimer=setTimeout(()=>$('supportCall').classList.remove('visible'),1500);this.shatter(e.x,e.y,h.color,15,.6);}
+    if(e.type==='ultimate'){this.hitStop=reduced?0:.55;this.slow=reduced?0:.6;this.flash=reduced?0:.16;this.trauma=13;const c=$('skillCutin');c.querySelector('.cutin-portrait').style.setProperty('--portrait-image',`url("assets/${game.current.art}-v2.jpg")`);this.punch(c,'play');this.impacts.push({x:250,y:280,life:1.2,max:1.2,color:'#e7ffc2',power:5,angle:0,ritual:true});this.impactAudio(1.5,true);}
     if(e.type==='enemyAttack'){this.trauma=12;this.punch($('damageVignette'),'flash');this.shatter(game.current.x,game.current.y,'#ef9071',20);this.impactAudio(1.2);}
   },
-  heroPortrait(id,x,y,size){const im=images[HEROES[id].art];if(im.complete&&im.naturalWidth){const w=im.naturalWidth,h=im.naturalHeight;ctx.drawImage(im,w*.1,h*.01,w*.8,h*.8,x,y,size,size);}},
+  heroPortrait(id,x,y,size){const im=images[game.heroes[id].art];if(im.complete&&im.naturalWidth){const w=im.naturalWidth,h=im.naturalHeight;ctx.drawImage(im,w*.1,h*.01,w*.8,h*.8,x,y,size,size);}},
   monster(e,t,death=0){
-    const mini=e.art==='deep-one',im=mini?this.minion:this.boss,size=e.r*(mini?3.15:3.55);const j=this.jolts.get(e.id),jolt=j||{x:0,y:0,flash:0};const breath=reduced?0:Math.sin(t*1.65+e.id)*.016,offset=reduced?0:Math.sin(t*1.35+e.id)*3;
+    const mini=e.art==='deep-one',key=e.sprite||(mini?'minion':e.art==='watcher'?'watcher':'boss'),im=this[key],size=e.r*(mini?3.15:3.55);const j=this.jolts.get(e.id),jolt=j||{x:0,y:0,flash:0};const breath=reduced?0:Math.sin(t*1.65+e.id)*.016,offset=reduced?0:Math.sin(t*1.35+e.id)*3;
     ctx.save();ctx.translate(e.x+jolt.x,e.y+jolt.y+offset);ctx.rotate(reduced?0:Math.sin(t*.8+e.id)*.018);ctx.scale(1+breath+death*.15,1-breath+death*.15);
     if(e.art==='cthulhu')ctx.filter='hue-rotate(15deg) saturate(1.15)';
-    if(im.complete&&im.naturalWidth){ctx.drawImage(im,-size/2,-size/2,size,size);ctx.filter='none';if(jolt.flash>0||death){const mask=this.masks.get(mini?'minion':'boss');if(mask){ctx.globalAlpha=Math.min(.85,jolt.flash*5+death*.5);ctx.drawImage(mask,-size/2,-size/2,size,size);}}}
+    if(im.complete&&im.naturalWidth){ctx.drawImage(im,-size/2,-size/2,size,size);ctx.filter='none';if(jolt.flash>0||death){const mask=this.masks.get(key);if(mask){ctx.globalAlpha=Math.min(.85,jolt.flash*5+death*.5);ctx.drawImage(mask,-size/2,-size/2,size,size);}}}
     else{const old=images[e.art];if(old.complete&&old.naturalWidth)ctx.drawImage(old,-size/2,-size/2,size,size);}
     ctx.restore();
   }

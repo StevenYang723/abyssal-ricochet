@@ -27,8 +27,12 @@ jobs:
           node --check dist/engine.js
           node --check dist/game.js
           node --check dist/battle-fx.js
+          node --check dist/progression.js
+          node --check dist/campaign.js
       - name: Verify combat and full campaign
-        run: node test-engine.cjs
+        run: |
+          node test-engine.cjs
+          node test-progression.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload website

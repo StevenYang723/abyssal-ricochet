@@ -15,10 +15,10 @@
   class AbyssEngine {
     constructor(onEvent = ()=>{}) {this.onEvent=onEvent;this.reset();}
     emit(type,data={}) {this.onEvent({type,...data});}
-    reset() {this.stage=0;this.turn=1;this.active=0;this.hp=8000;this.maxHp=8000;this.sanity=100;this.energy=0;this.score=0;this.maxCombo=0;this.totalShots=0;this.totalKills=0;this.armed=false;this.mode='ready';this.time=0;this.combo=0;this.loadStage();}
+    reset(options={}) {this.stages=options.stages||STAGES;this.party=options.party||HEROES;this.stage=0;this.turn=1;this.active=0;this.hp=options.maxHp||8000;this.maxHp=this.hp;this.sanity=100;this.energy=0;this.score=0;this.maxCombo=0;this.totalShots=0;this.totalKills=0;this.armed=false;this.powered=false;this.mode='ready';this.time=0;this.combo=0;this.loadStage();}
     loadStage() {
-      this.enemies=STAGES[this.stage].enemies.map((e,i)=>({...e,id:i,maxHp:e.hp,counter:e.cooldown,hitAt:-10,flash:0}));
-      this.heroes=HEROES.map((h,i)=>({...h,id:i,x:[170,330,90,410][i],y:[447,447,495,495][i],r:22,vx:0,vy:0}));
+      this.enemies=this.stages[this.stage].enemies.map((e,i)=>({...e,id:i,maxHp:e.hp,counter:e.cooldown,hitAt:-10,flash:0}));
+      this.heroes=this.party.map((h,i)=>({...h,supportKind:h.supportKind??i,supportScale:h.supportScale||1,id:i,x:[170,330,90,410][i],y:[447,447,495,495][i],r:22,vx:0,vy:0}));
       this.pillars=[{x:175,y:338,r:17},{x:325,y:338,r:17}];this.mode='ready';this.armed=false;this.combo=0;this.emit('stage',{stage:this.stage});
     }
     get current(){return this.heroes[this.active];}
@@ -30,7 +30,7 @@
       const length=Math.hypot(dx,dy),speed=650+clamp(power,0,1)*470;
       this.mode='moving';this.shotTime=0;this.combo=0;this.friends=new Set();this.trail=[];this.totalShots++;
       this.current.vx=dx/length*speed;this.current.vy=dy/length*speed;this.powered=this.armed;this.armed=false;
-      if(this.powered){this.energy=0;for(const e of this.enemies)if(e.hp>0)this.damage(e,220,'ritual');this.sanity=Math.min(100,this.sanity+10);this.emit('ultimate',{x:this.current.x,y:this.current.y});}
+      if(this.powered){this.energy=0;for(const e of this.enemies)if(e.hp>0)this.damage(e,220*this.current.supportScale,'ritual');this.sanity=Math.min(100,this.sanity+10);this.emit('ultimate',{x:this.current.x,y:this.current.y});}
       this.emit('launch',{hero:this.active});return true;
     }
     damage(enemy,amount,kind='hit'){
@@ -41,10 +41,11 @@
     support(hero){
       if(this.friends.has(hero.id))return;this.friends.add(hero.id);this.energy=clamp(this.energy+9,0,100);this.emit('support',{hero:hero.id,x:hero.x,y:hero.y});
       const alive=this.enemies.filter(e=>e.hp>0);if(!alive.length)return;
-      if(hero.id===0){const e=alive.sort((a,b)=>a.hp-b.hp)[0];this.emit('beam',{from:hero,to:e,color:hero.color});this.damage(e,180,'support');}
-      if(hero.id===1){for(const e of alive){this.emit('beam',{from:hero,to:e,color:hero.color});this.damage(e,100,'support');}}
-      if(hero.id===2){this.hp=Math.min(this.maxHp,this.hp+500);this.sanity=Math.min(100,this.sanity+5);this.emit('heal',{x:hero.x,y:hero.y,amount:500});const e=alive.sort((a,b)=>Math.hypot(a.x-hero.x,a.y-hero.y)-Math.hypot(b.x-hero.x,b.y-hero.y))[0];this.emit('beam',{from:hero,to:e,color:hero.color});this.damage(e,80,'support');}
-      if(hero.id===3){const e=alive.sort((a,b)=>b.hp-a.hp)[0];this.emit('beam',{from:hero,to:e,color:hero.color});this.damage(e,240,'support');}
+      const scale=hero.supportScale||1,kind=hero.supportKind??hero.id;
+      if(kind===0){const e=alive.sort((a,b)=>a.hp-b.hp)[0];this.emit('beam',{from:hero,to:e,color:hero.color});this.damage(e,180*scale,'support');}
+      if(kind===1){for(const e of alive){this.emit('beam',{from:hero,to:e,color:hero.color});this.damage(e,100*scale,'support');}}
+      if(kind===2){const heal=Math.round(500*scale);this.hp=Math.min(this.maxHp,this.hp+heal);this.sanity=Math.min(100,this.sanity+5);this.emit('heal',{x:hero.x,y:hero.y,amount:heal});const e=alive.sort((a,b)=>Math.hypot(a.x-hero.x,a.y-hero.y)-Math.hypot(b.x-hero.x,b.y-hero.y))[0];this.emit('beam',{from:hero,to:e,color:hero.color});this.damage(e,80*scale,'support');}
+      if(kind===3){const e=alive.sort((a,b)=>b.hp-a.hp)[0];this.emit('beam',{from:hero,to:e,color:hero.color});this.damage(e,240*scale,'support');}
     }
     collide(ball,object,rebound=true){
       const dx=ball.x-object.x,dy=ball.y-object.y,dist=Math.hypot(dx,dy),radius=ball.r+object.r;
@@ -58,10 +59,10 @@
       if(b.x<minX||b.x>maxX){b.x=clamp(b.x,minX,maxX);b.vx*=-1;this.emit('wall',{x:b.x,y:b.y});}
       if(b.y<minY||b.y>maxY){b.y=clamp(b.y,minY,maxY);b.vy*=-1;this.emit('wall',{x:b.x,y:b.y});}
       for(const p of this.pillars)if(this.collide(b,p)){this.emit('wall',{x:b.x,y:b.y});}
-      for(const e of this.enemies){if(e.hp<=0)continue;e.flash=Math.max(0,e.flash-dt);if(this.collide(b,e)&&this.time-e.hitAt>.13){e.hitAt=this.time;this.damage(e,b.attack*(this.powered?2.2:1)*(1+Math.min(this.combo,12)*.04));}}
+      for(const e of this.enemies){if(e.hp<=0)continue;e.flash=Math.max(0,e.flash-dt);if(this.collide(b,e,b.type!=='贯通')&&this.time-e.hitAt>(b.type==='贯通'?.3:.13)){e.hitAt=this.time;this.damage(e,b.attack*(this.powered?2.2:1)*(1+Math.min(this.combo,12)*.04));}}
       for(const h of this.heroes)if(h.id!==this.active&&Math.hypot(b.x-h.x,b.y-h.y)<b.r+h.r+8)this.support(h);
       const drag=Math.exp(-.55*dt);b.vx*=drag;b.vy*=drag;
-      if(this.stageHp<=0){b.vx=0;b.vy=0;this.mode=this.stage===2?'victory':'cleared';this.score+=STAGES[this.stage].reward;this.emit(this.mode,{stage:this.stage});return;}
+      if(this.stageHp<=0){b.vx=0;b.vy=0;this.mode=this.stage===this.stages.length-1?'victory':'cleared';this.score+=this.stages[this.stage].reward;this.emit(this.mode,{stage:this.stage});return;}
       if(Math.hypot(b.vx,b.vy)<90||this.shotTime>=4.8)this.finishShot();
     }
     finishShot(){
