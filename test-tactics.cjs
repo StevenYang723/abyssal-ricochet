@@ -25,17 +25,35 @@ for(const key of Object.keys(BOSSES)){const {g,events}=battle('evelyn',key),boss
 ({g}=battle('evelyn','cthulhu'));g.enemies[0].moveIndex=2;g.planBoss(g.enemies[0]);g.heroes.forEach(h=>{h.x=250;h.y=405;});assert.equal(g.executeBoss(g.enemies[0]),0,'Eclipse safe zone prevents damage');
 ({g}=battle('lucia','cthulhu'));g.hazards=[{shape:'edge',width:100,ticks:2,power:100}];g.partyPoison={ticks:3,power:100};g.energy=100;g.armUltimate();g.launch(0,-1);assert.equal(g.hazards.length,0);assert.equal(g.partyPoison,null);
 ({g}=battle('corvus'));g.enemies.forEach(e=>{e.hp=10;e.poison={ticks:1,power:20};});g.launch(0,-1);g.finishShot();assert.equal(g.mode,'victory','Damage over time can finish a stage without an extra shot');
-const state=new Map(),c=new Campaign({getItem:k=>state.get(k),setItem:(k,v)=>state.set(k,v)});c.state.owned.evelyn.level=20;c.awaken('evelyn');const restored=new Campaign(c.storage);assert(portrait(restored.hero('evelyn')).includes('awakened-v4'));assert(portrait({...restored.hero('evelyn'),awake:0}).includes('base-v4'));
-for(const h of CATALOG)for(const awake of [0,1])assert(fs.existsSync('dist/'+portrait({...h,awake})),`Missing ${h.key} form ${awake}`);
+const state=new Map(),c=new Campaign({getItem:k=>state.get(k),setItem:(k,v)=>state.set(k,v)});c.state.owned.evelyn.level=20;c.awaken('evelyn');const restored=new Campaign(c.storage);assert(portrait(restored.hero('evelyn')).includes('awakened-v5'));assert(portrait({...restored.hero('evelyn'),awake:0}).includes('-v2.jpg'));
 // Exercise actual gameplay events through every rendering branch. Reject invalid
 // coordinates before they can break a canvas frame on mobile.
 const vm=require('node:vm');
 const numeric=(...values)=>values.forEach(v=>{if(typeof v==='number')assert(Number.isFinite(v),'Finite drawing coordinate required');else if(Array.isArray(v))numeric(...v);});
-const canvasMethods=['save','restore','translate','rotate','beginPath','closePath','moveTo','lineTo','arc','ellipse','quadraticCurveTo','bezierCurveTo','fill','stroke','rect','clip','setLineDash','fillRect','strokeRect','fillText'];
-const context=Object.fromEntries(canvasMethods.map(k=>[k,(...v)=>numeric(...v)]));context.globalAlpha=1;
-const sandbox={window:{},AbyssKit:require('./dist/combat-kit.js'),ctx:context,game:null,reduced:false,tone:()=>{},setTimeout:()=>{},BattleFX:{trauma:0,hitStop:0,punch:()=>{}},$:()=>({}),line:(x,y,x2,y2,...v)=>{[x,y,x2,y2].forEach(n=>assert(Number.isFinite(n)));numeric(...v);},circle:(x,y,r,...v)=>{[x,y,r].forEach(n=>assert(Number.isFinite(n)));assert(r>=0);numeric(...v);}};
-vm.runInNewContext(fs.readFileSync('dist/ability-fx.js','utf8'),sandbox);
+const canvasMethods=['save','restore','translate','rotate','beginPath','closePath','moveTo','lineTo','arc','ellipse','quadraticCurveTo','bezierCurveTo','fill','stroke','rect','clip','setLineDash','fillRect','strokeRect','fillText','scale','clearRect','strokeText','drawImage','setTransform'];
+const context=Object.fromEntries(canvasMethods.map(k=>[k,(...v)=>numeric(...v)]));context.globalAlpha=1;context.createRadialGradient=(...v)=>{numeric(...v);return {addColorStop:()=>{}};};context.createLinearGradient=context.createRadialGradient;
+class MockImage{constructor(){this.complete=true;this.naturalWidth=this.width=1254;this.naturalHeight=this.height=1254;}set src(v){this.path=v;if(this.onload)this.onload();}}
+const sandbox={Image:MockImage,document:{createElement:()=>({width:0,height:0,getContext:()=>context})},window:{},AbyssKit:require('./dist/combat-kit.js'),ctx:context,game:null,reduced:false,tone:()=>{},setTimeout:()=>{},BattleFX:{trauma:0,hitStop:0,punch:()=>{}},$:()=>({}),line:(x,y,x2,y2,...v)=>{[x,y,x2,y2].forEach(n=>assert(Number.isFinite(n)));numeric(...v);},circle:(x,y,r,...v)=>{[x,y,r].forEach(n=>assert(Number.isFinite(n)));assert(r>=0);numeric(...v);}};
+const renderContext=vm.createContext(sandbox);vm.runInContext(fs.readFileSync('dist/ability-fx.js','utf8'),renderContext);
 const renderer=sandbox.window.AbilityFX;
 for(const h of CATALOG){const sample=battle(h.key,'watcher');sandbox.game=sample.g;sample.g.onEvent=e=>renderer.event(e);renderer.reset();sample.g.tacticalSupport(sample.g.current);sample.g.energy=100;sample.g.armUltimate();sample.g.launch(0,-1);sample.g.wallSkill({x:12,y:180});sample.g.contactSkill(sample.g.enemies[0]);sample.g.turn++;sample.g.resolveTurnEffects();for(const dt of [.1,.25,.3]){renderer.drawUnder(.5);renderer.drawOver(.5,dt);}}
 for(const kind of Object.keys(BOSSES)){const sample=battle('lucia',kind);sandbox.game=sample.g;sample.g.onEvent=e=>renderer.event(e);renderer.reset();for(let i=0;i<3;i++){renderer.drawUnder(.5);sample.g.executeBoss(sample.g.enemies[0]);for(const dt of [.1,.25,.3])renderer.drawOver(.5,dt);}sample.g.enemies[0].hp=5000;sample.g.checkBossPhase(sample.g.enemies[0]);sample.g.protect(500);sample.g.hurtParty(200);renderer.drawOver(.5,.1);}
+// Render the complete battlefield as well: catches missing trail coordinates,
+// not just isolated ability primitives. Exercise both motion settings.
+const element={classList:{add:()=>{},remove:()=>{}},style:{setProperty:()=>{}},querySelector(){return this;},textContent:'',offsetWidth:1};
+Object.assign(sandbox,{sound:false,navigator:{},$:()=>element,images:{},particles:[],floaters:[],beams:[],rings:[],trail:[],draw:()=>{},drawAim:()=>{},portraitKey:h=>h.art+(h.awake>0?'-awakened':''),AbyssProgress:require('./dist/progression.js'),clearTimeout:()=>{}});
+for(const h of CATALOG)for(const suffix of ['','-awakened'])sandbox.images[h.art+suffix]=new MockImage();
+for(const key of ['watcher','deep-one','cthulhu'])sandbox.images[key]=new MockImage();
+vm.runInContext(fs.readFileSync('dist/battle-fx.js','utf8'),renderContext);
+const battlefield=vm.runInContext('BattleFX',renderContext);
+for(const reducedMotion of [false,true]){
+ sandbox.reduced=reducedMotion;
+ const sample=battle('orion','warden');sandbox.game=sample.g;
+ sample.g.onEvent=e=>{battlefield.event(e);renderer.event(e);};sample.g.energy=100;sample.g.armUltimate();sample.g.launch(0,-1);
+ sandbox.trail=[{x:170,y:447},{x:171,y:430},{x:175,y:410}];
+ for(let i=0;i<8;i++){sample.g.update(1/120);sandbox.draw(i/60,1/60);}
+}
+assert.equal(renderer.textures.length,16,'All sixteen material textures are prepared');
+assert(fs.existsSync('dist/assets/arcana-vfx-v5.png'));
+for(const h of CATALOG)for(const awake of [0,1])assert(fs.existsSync('dist/'+portrait({...h,awake})),`Missing ${h.key} form ${awake}`);
 console.log(JSON.stringify({result:'PASS',heroes:12,supportSkills:12,ultimateSkills:12,bossSkills:9,checks:['unique mechanics and visual motifs','rail geometry','shields and cleanse','life steal','delayed impacts','armor bypass','bounded follow-ups','boss rotation','enrage','telegraph dodge','safe zone','damage-over-time victory','awakening save and portraits','all skill and boss renderer branches']},null,2));

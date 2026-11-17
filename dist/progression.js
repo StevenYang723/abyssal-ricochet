@@ -14,7 +14,7 @@
   ];
   const CATALOG=[...base.HEROES.map((h,i)=>({...h,key:h.art,rarity:i===0?5:4,element:['森','潮','辉','幽'][i],supportKind:i})),...extra.map(([key,name,role,rarity,element,color,attack,supportKind,skill,lore])=>({key,art:key,name,role,rarity,element,color,attack,supportKind,skill,lore,type:['aster','nyra','ren'].includes(key)?'贯通':'反射',description:['追击生命最低的敌人。','对全体敌人发起远程攻击。','恢复生命与理智，并攻击最近的敌人。','集中攻击生命最高的敌人。'][supportKind]}))];
   for(const h of CATALOG){const k=kit.SKILLS[h.key];h.skill=k.support;h.ultimate=k.ultimate;h.description=k.text;h.ultimateDescription=k.ultText;h.combatRole=k.role;h.formTitle=k.form;h.color=k.color;}
-  const portrait=h=>`assets/${h.key||h.art}-${h.awake>0?'awakened':'base'}-v4.jpg`;
+  const portrait=h=>`assets/${h.key||h.art}${h.awake>0?'-awakened-v5':'-v2'}.jpg`;
   const CHAPTERS=[{name:'雾锁印斯茅斯',en:'INNSMOUTH',story:'一封潮湿的信，把你带到这座没有钟声的港口。',color:'#7fc7b0'}, {name:'沉没的圣堂',en:'THE DROWNED CHAPEL',story:'钟楼沉入海底之后，祷告仍然没有停止。',color:'#a6b8e4'}, {name:'群星归位之夜',en:"R’LYEH",story:'在梦与现实的缝隙中，旧日之城终于浮出水面。',color:'#d2a6cb'}];
   const names=['潮湿的来信','没有归途的街','雾港的凝视者','深海阶梯','无声的祷告','圣堂守门人','异星回廊','群星之门','旧日支配者'];
   const QUESTS=names.map((name,i)=>({id:i,name,chapter:Math.floor(i/3),number:`${Math.floor(i/3)+1}-${i%3+1}`,cost:6+i*2,level:1+i*4,power:700+i*200,gold:700+i*220,exp:18+i*6,gems:150+i*25,sigils:1+Math.floor(i/3),boss:i%3===2}));
