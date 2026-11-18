@@ -25,6 +25,6 @@ while(g.mode!=='victory'&&g.mode!=='defeat'&&turns<35){
   if(g.energy===100)g.armUltimate();g.launch(Math.cos(bestAngle),Math.sin(bestAngle));simulate(g);turns++;
 }
 assert.equal(g.mode,'victory','Campaign should be winnable through normal shots');assert(g.hp>0);assert(g.sanity>0);summaries.push({stage:3,shots:g.totalShots,hp:g.hp,sanity:g.sanity});
-const html=fs.readFileSync(path.join(__dirname,'dist/index.html'),'utf8');for(const src of [...html.matchAll(/(?:src|href)="([^"#]+)"/g)].map(m=>m[1])){if(src==='./'||src.startsWith('http'))continue;assert(fs.existsSync(path.join(__dirname,'dist',src)),`Missing ${src}`);}
+const html=fs.readFileSync(path.join(__dirname,'dist/index.html'),'utf8');for(const src of [...html.matchAll(/(?:src|href)="([^"#]+)"/g)].map(m=>m[1])){if(src==='./'||src.startsWith('http'))continue;assert(fs.existsSync(path.join(__dirname,'dist',src.split('?')[0])),`Missing ${src}`);}
 for(const art of ['sigil','arena','watcher','deep-one','cthulhu','evelyn','noah','lucia','silas'])assert(fs.existsSync(path.join(__dirname,'dist/assets',art+'.svg')));
 console.log(JSON.stringify({result:'PASS',checks:['wall reflection','enemy collision and damage','single-use support','healing','ultimate energy and damage','defeat','stage progression','three-stage campaign','asset integrity'],campaign:summaries},null,2));
