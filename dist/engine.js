@@ -20,7 +20,7 @@
     loadStage() {
       this.enemies=this.stages[this.stage].enemies.map((e,i)=>({...e,id:i,maxHp:e.hp,counter:e.counter??e.cooldown,hitAt:-10,flash:0}));
       this.heroes=this.party.map((h,i)=>({...h,supportKind:h.supportKind??i,supportScale:h.supportScale||1,id:i,x:[170,330,90,410][i],y:[447,447,495,495][i],r:22,vx:0,vy:0}));
-      this.pillars=[{x:175,y:338,r:17},{x:325,y:338,r:17}];this.mode='ready';this.armed=false;this.combo=0;this.prepareTactics();this.emit('stage',{stage:this.stage});
+      this.pillars=(this.stages[this.stage].pillars??[{x:175,y:338,r:17},{x:325,y:338,r:17}]).map(p=>({...p}));this.mode='ready';this.armed=false;this.combo=0;this.prepareTactics();this.emit('stage',{stage:this.stage});
     }
     get current(){return this.heroes[this.active];}
     get stageHp(){return this.enemies.reduce((s,e)=>s+Math.max(0,e.hp),0);}
@@ -31,7 +31,7 @@
       const length=Math.hypot(dx,dy),speed=650+clamp(power,0,1)*470;
       this.mode='moving';this.shotTime=0;this.combo=0;this.friends=new Set();this.trail=[];this.totalShots++;
       this.current.vx=dx/length*speed;this.current.vy=dy/length*speed;this.powered=this.armed;this.armed=false;
-      this.shotKit=null;
+      this.shotKit=null;this.beginShotTactics();
       if(this.powered){this.energy=0;if(this.tactical)this.tacticalUltimate();else{for(const e of this.enemies)if(e.hp>0)this.damage(e,220*this.current.supportScale,'ritual');this.sanity=Math.min(100,this.sanity+10);}this.emit('ultimate',{x:this.current.x,y:this.current.y,key:this.current.key||this.current.art});}
       this.emit('launch',{hero:this.active});return true;
     }
@@ -43,7 +43,7 @@
       if(enemy.hp<=0){this.totalKills++;this.score+=80;this.emit('kill',{x:enemy.x,y:enemy.y,name:enemy.name});}else if(this.tactical)this.checkBossPhase(enemy);return actual;
     }
     support(hero){
-      if(this.friends.has(hero.id))return;this.friends.add(hero.id);this.energy=clamp(this.energy+9,0,100);this.emit('support',{hero:hero.id,x:hero.x,y:hero.y});
+      if(!(this.friends instanceof Set))this.friends=new Set();if(this.friends.has(hero.id))return;this.friends.add(hero.id);this.energy=clamp(this.energy+9,0,100);this.emit('support',{hero:hero.id,x:hero.x,y:hero.y});
       if(this.tactical){this.tacticalSupport(hero);return;}
       const alive=this.enemies.filter(e=>e.hp>0);if(!alive.length)return;
       const scale=hero.supportScale||1,kind=hero.supportKind??hero.id;
@@ -59,7 +59,7 @@
       return true;
     }
     update(dt){
-      if(this.mode!=='moving')return;dt=clamp(dt,0,.025);this.time+=dt;this.shotTime+=dt;const b=this.current;b.x+=b.vx*dt;b.y+=b.vy*dt;
+      if(this.mode!=='moving')return;dt=clamp(dt,0,.025);this.time+=dt;this.shotTime+=dt;const b=this.current,previous={x:b.x,y:b.y};b.x+=b.vx*dt;b.y+=b.vy*dt;
       const minX=12+b.r,maxX=488-b.r,minY=80+b.r,maxY=535-b.r;
       if(b.x<minX||b.x>maxX){b.x=clamp(b.x,minX,maxX);b.vx*=-1;this.emit('wall',{x:b.x,y:b.y});}
       if(b.y<minY||b.y>maxY){b.y=clamp(b.y,minY,maxY);b.vy*=-1;this.emit('wall',{x:b.x,y:b.y});}
@@ -67,12 +67,13 @@
       const piercing=b.type==='贯通'||this.shotKit?.pierce;
       for(const e of this.enemies){if(e.hp<=0)continue;e.flash=Math.max(0,e.flash-dt);if(this.collide(b,e,!piercing)&&this.time-e.hitAt>(piercing?.3:.13)){e.hitAt=this.time;this.damage(e,b.attack*(this.powered?(this.shotKit?.mult||2.2):1)*(1+Math.min(this.combo,12)*.04));this.contactSkill(e);}}
       for(const h of this.heroes)if(h.id!==this.active&&Math.hypot(b.x-h.x,b.y-h.y)<b.r+h.r+8)this.support(h);
+      this.advanceSpatial(dt,previous);
       const rough=this.hazards.some(h=>h.id==='bells'&&Kit.inPlan(b,h));const drag=Math.exp(-(this.shotKit?.drag||.55)*dt*(rough?2.5:1));b.vx*=drag;b.vy*=drag;
       if(this.clearStage())return;
       if(Math.hypot(b.vx,b.vy)<90||this.shotTime>=4.8)this.finishShot();
     }
     finishShot(){
-      this.current.vx=0;this.current.vy=0;let damage=this.tactical?this.resolveTurnEffects():0;
+      this.current.vx=0;this.current.vy=0;if(this.tactical)this.finishSpatial();let damage=this.tactical?this.resolveTurnEffects():0;
       if(this.hp<=0||this.sanity<=0){this.mode='defeat';this.emit('defeat');return;}if(this.clearStage())return;
       for(const e of this.enemies)if(e.hp>0){e.counter--;if(e.counter<=0){if(this.tactical&&e.bossKind){damage+=this.executeBoss(e);}else{damage+=this.hurtParty(e.damage);e.counter=e.cooldown;this.emit('enemyAttack',{x:e.x,y:e.y,damage:e.damage});}}}
       this.sanity=Math.max(0,this.sanity-(this.stage===2?6:4));

@@ -31,6 +31,7 @@ jobs:
           node --check dist/campaign.js
           node --check dist/combat-kit.js
           node --check dist/ability-fx.js
+          node --check dist/spatial-fx.js
           node --check dist/arcana-audio.js
           node --check dist/campaign-extras.js
       - name: Verify combat and full campaign
@@ -38,6 +39,7 @@ jobs:
           node test-engine.cjs
           node test-progression.cjs
           node test-tactics.cjs
+          node test-spatial.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload website

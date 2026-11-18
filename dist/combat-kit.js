@@ -2,30 +2,87 @@
   'use strict';
   const SKILLS={
     evelyn:{support:'星纹封缄',ultimate:'禁书·七星连锁',form:'星书的见证者',role:'印记 / 增伤',color:'#9bd1b0',motif:'constellation',text:'追击最虚弱的敌人并施加 2 回合星纹：受到伤害增加 25%。',ultText:'对全体进行三段星击，施加 3 回合星纹；本次弹射伤害提升。'},
-    noah:{support:'银线狙击',ultimate:'终幕·交叉火线',form:'最后的守望者',role:'直线 / 穿透',color:'#8ac8ef',motif:'rail',text:'瞄准最强敌人发射银线，贯穿同一直线上的所有目标。',ultText:'从战场两侧进行三轮交叉射击，打击全体敌人。'},
+    noah:{support:'银线狙击',ultimate:'终幕·交叉火线',form:'最后的守望者',role:'直线 / 穿透',color:'#8ac8ef',motif:'rail',text:'沿撞触者的前进方向发射银线，贯穿射线内的敌人；可通过弹射角度瞄准。',ultText:'从战场两侧进行三轮交叉射击，打击全体敌人。'},
     lucia:{support:'归途灯火',ultimate:'不灭·灯塔圣域',form:'长夜的引灯人',role:'治疗 / 净化',color:'#f2c568',motif:'lantern',text:'恢复 500×成长倍率生命、5 理智，获得 220×倍率护盾并清除中毒。',ultText:'恢复 1,000×倍率生命，建立 900×倍率护盾，净化所有危险地形与中毒。'},
     silas:{support:'灵魂汲取',ultimate:'彼岸·亡灵回响',form:'彼岸的渡魂者',role:'吸血 / 续航',color:'#b392da',motif:'drain',text:'汲取最强敌人生命，并将实际伤害的 70% 转为治疗。',ultText:'链接全体敌人汲取生命，实际伤害的 60% 转为治疗，并恢复 12 理智。'},
     aster:{support:'坠星预告',ultimate:'天穹·陨星雨',form:'群星的导航者',role:'延迟 / 范围',color:'#9ab9ff',motif:'meteor',text:'在最强敌人处标记陨星，下次弹射结束时对范围内造成高伤害。',ultText:'在存活敌人处落下陨星，对各落点范围内的敌人造成伤害。'},
     rook:{support:'追猎弹跳',ultimate:'狩夜·爆裂装填',form:'深红猎手',role:'跳弹 / 反弹爆破',color:'#e79a65',motif:'ricochet',text:'猎矢依次弹跳最多三个敌人，后续命中伤害依次降低。',ultText:'本次弹射强化至 3 倍；前 6 次撞墙或障碍时发射爆裂猎矢追击最近敌人。'},
     seraph:{support:'白羽守誓',ultimate:'赦令·圣翼庇护',form:'白羽的裁决者',role:'护盾 / 控制',color:'#e8e2b6',motif:'feather',text:'获得 480×倍率护盾，清除一个危险区域与中毒。',ultText:'获得 850×倍率护盾，恢复 15 理智，并将所有敌人的行动倒计时延长 2。'},
-    corvus:{support:'疫瓶破裂',ultimate:'黑羽·腐蚀蔓延',form:'翡翠疫使',role:'毒伤 / 破甲',color:'#92c96e',motif:'poison',text:'毒瓶命中全体，并施加 3 次持续毒伤；毒伤无视首领护甲。',ultText:'强化疫雾笼罩全场，立即腐蚀并附加 4 次高额毒伤，无视护甲。'},
-    nyra:{support:'回旋潮汐',ultimate:'深海·月引洪流',form:'万海的继承者',role:'水波 / 清场',color:'#6ed6d0',motif:'tide',text:'以最近敌人为中心扩散水波，伤害附近敌人，并使受击敌人行动延后 1。',ultText:'洪流冲击全体，清除危险地形、中毒，并将敌人行动延后 1。'},
-    orion:{support:'裂星剑弧',ultimate:'誓剑·星骸冲锋',form:'破晓星骑',role:'破甲 / 冲锋',color:'#c4bcf4',motif:'blade',text:'剑弧斩向最强敌人，无视护甲造成伤害。',ultText:'获得 650×倍率护盾，本次切换贯通、伤害提升至 3 倍；首次命中追加破甲剑弧。'},
+    corvus:{support:'疫瓶破裂',ultimate:'黑羽·腐蚀蔓延',form:'翡翠疫使',role:'毒域 / 破甲',color:'#92c96e',motif:'poison',text:'自身周围半径 175 的疫雾腐蚀敌人，施加 3 次无视护甲的毒伤。',ultText:'强化疫雾笼罩全场，立即腐蚀并附加 4 次高额毒伤，无视护甲。'},
+    nyra:{support:'回旋潮汐',ultimate:'深海·月引洪流',form:'万海的继承者',role:'环波 / 延时',color:'#6ed6d0',motif:'tide',text:'以自身为中心掀起半径 160 的圆形潮波，伤害范围内敌人并将行动延后 1。',ultText:'洪流冲击全体，清除危险地形、中毒，并将敌人行动延后 1。'},
+    orion:{support:'裂星剑弧',ultimate:'誓剑·星骸冲锋',form:'破晓星骑',role:'扇斩 / 破甲',color:'#c4bcf4',motif:'blade',text:'沿撞触者的前进方向挥出半径 220 的前向扇形剑弧，无视护甲。',ultText:'获得 650×倍率护盾，本次切换贯通、伤害提升至 3 倍；首次命中追加破甲剑弧。'},
     mira:{support:'加速指针',ultimate:'时隙·第十三刻',form:'停摆时刻',role:'加速 / 延时',color:'#e4b76f',motif:'clock',text:'使当前弹射加速 18%，补充 18 秘术能量，并延后最强敌人行动 1。',ultText:'所有敌人行动延后 2；本次弹射加速 25%、减速阻力降低。'},
-    ren:{support:'双月斩',ultimate:'封魔·绯刃无明',form:'赤月封魔者',role:'连斩 / 灼烧',color:'#ef8890',motif:'slash',text:'对最近敌人进行两段斩击，附加 2 次灼烧。',ultText:'本次切换贯通、伤害提升至 2.8 倍；每次碰撞追加火焰斩，最多 8 次。'}
+    ren:{support:'双月斩',ultimate:'封魔·绯刃无明',form:'赤月封魔者',role:'连斩 / 灼烧',color:'#ef8890',motif:'slash',text:'对最近敌人进行两段斩击，附加 2 次灼烧。',ultText:'本次切换贯通、伤害提升至 2.8 倍；每次碰撞追加火焰斩，最多 8 次。'},
+    vesper:{support:'星棺十字',ultimate:'晚祷·八芒裁决',form:'无星夜的审判者',role:'十字 / 光束',color:'#bdb1f0',motif:'cross',text:'从自身向上下左右放出十字激光，贯穿光带内的全部敌人。',ultText:'十字与斜十字同时展开，八方向的宽光束造成高额伤害。'},
+    bram:{support:'炉心震爆',ultimate:'余烬·移动雷阵',form:'熔星的铸钟人',role:'环爆 / 布雷',color:'#eea46d',motif:'nova',text:'自身周围半径 140 发生环形爆破；靠近敌群再触发效果更强。',ultText:'本次沿弹射路径埋下最多 10 枚熔星雷，短暂蓄能后各自引爆半径 82 的区域。'},
+    iris:{support:'虹膜散射',ultimate:'万华·虹雨星轮',form:'虹膜彼端的占星师',role:'扇幕 / 角度',color:'#b4dce7',motif:'fan',text:'沿撞触者前进方向展开五束扇形光弹，只命中弹道内的敌人。',ultText:'从自身向十二个方向发射光束，形成覆盖整圈的虹雨星轮。'},
+    galen:{support:'镜廊折光',ultimate:'无尽·双镜回廊',form:'镜渊的巡礼者',role:'折射 / 反弹',color:'#82c9d5',motif:'mirror',text:'沿撞触方向发射一束激光，在战场边界最多折射三次，可绕过空隙命中敌人。',ultText:'两束反向镜光各折射四次，形成贯穿战场的镜廊。'},
+    lyra:{support:'幽弦合奏',ultimate:'安魂·四重奏',form:'彼岸的奏鸣者',role:'连线 / 持续',color:'#e3afd6',motif:'tether',text:'本次弹射中，自身与行动角色之间形成弦线，最多脉冲 12 次；弦线扫过敌人即可伤害。',ultText:'行动角色与其余三位队友相连，三条弦线持续脉冲，重叠命中不重复计伤。'},
+    morrow:{support:'微型坍缩',ultimate:'终夜·寂静奇点',form:'终夜的观测者',role:'引力 / 聚怪',color:'#9ca3df',motif:'gravity',text:'在自身周围半径 155 生成引力井，六次脉冲伤害并牵引小怪；首领不会被移动。',ultText:'半径 215 的奇点持续九次脉冲，聚拢小怪并延后范围内敌人的行动。'},
+    thalia:{support:'荆棘随行',ultimate:'荒园·血蔷薇径',form:'黑山的花冠祭司',role:'路径 / 陷阱',color:'#b7c18b',motif:'thorns',text:'本次弹射经过的路径长出荆棘，沿轨迹周期性伤害，每个敌人最多受击 6 次。',ultText:'本次转为贯通，留下更宽的血蔷薇轨迹，每个敌人最多受击 8 次。'},
+    sable:{support:'无面传令',ultimate:'秘宴·群星应答',form:'千面之夜的司仪',role:'接力 / 援护',color:'#dec48e',motif:'relay',text:'唤起自身半径 150 内队友的援护；同一角色每次弹射仅触发一次，接力不会循环。',ultText:'立即唤起另外三位队友的援护，可组合光束、引力井、弦线与荆棘。'}
   };
   const BOSSES={
     watcher:{name:'凝视者',phase:'瞳孔裂开 · 凝视范围扩大',moves:[{id:'gaze',name:'断魂凝视',hint:'避开锁定的直线光束',shape:'lane',color:'#b2df81'},{id:'spores',name:'孢子孵化',hint:'离开圆形孢子区；可用净化驱散毒池',shape:'circles',color:'#85bf67'},{id:'fear',name:'无声尖啸',hint:'损失理智；灯火和汲取可帮助恢复',shape:'fear',color:'#b894df'}]},
     warden:{name:'圣堂守门人',phase:'钟楼崩裂 · 刑钟与十字扩张',moves:[{id:'cross',name:'十字钟鸣',hint:'停在十字光带外侧',shape:'cross',color:'#d8ba77'},{id:'guard',name:'圣堂铁壁',hint:'获得护甲；破甲剑技和毒伤可穿透',shape:'guard',color:'#a5c9db'},{id:'bells',name:'坠落刑钟',hint:'离开落点；残留碎石会减慢弹射',shape:'circles',color:'#d8b083'}]},
-    cthulhu:{name:'克苏鲁',phase:'旧日苏醒 · 触腕与黑潮扩张',moves:[{id:'tentacles',name:'深海触腕',hint:'避开两条横向扫击带',shape:'rows',color:'#a586cf'},{id:'tide',name:'吞岸黑潮',hint:'远离战场边缘；净化可消除残留黑潮',shape:'edge',color:'#5cbfc0'},{id:'eclipse',name:'梦境蚀月',hint:'将调查员停入明亮的安全圆内',shape:'outside',color:'#bba1dc'}]}
+    cthulhu:{name:'克苏鲁',phase:'旧日苏醒 · 触腕与黑潮扩张',moves:[{id:'tentacles',name:'深海触腕',hint:'避开两条横向扫击带',shape:'rows',color:'#a586cf'},{id:'tide',name:'吞岸黑潮',hint:'远离战场边缘；净化可消除残留黑潮',shape:'edge',color:'#5cbfc0'},{id:'eclipse',name:'梦境蚀月',hint:'将调查员停入明亮的安全圆内',shape:'outside',color:'#bba1dc'}]},
+    prism:{name:'镜渊织母',phase:'万镜开眼 · 折光带扩张',moves:[{id:'prismCross',name:'菱镜斜十字',hint:'离开两条对角光带，中央十字间隙可躲避',shape:'lines',color:'#a7c7ed'},{id:'prismRay',name:'镜廊巡光',hint:'沿墙折射的光束将落下，避开全部反射线段',shape:'lines',color:'#a3e1df'},{id:'prismArmor',name:'千面镜甲',hint:'镜面护甲展开；破甲与毒伤可穿透',shape:'guard',color:'#b5b4eb'}]},
+    forge:{name:'熔星监工',phase:'熔炉失控 · 热浪与蒸汽扩张',moves:[{id:'forgeRing',name:'熔炉环震',hint:'站在内圈或最外侧，躲开发亮的环形热浪',shape:'annulus',color:'#f1af71'},{id:'forgeFalls',name:'熔星坠铸',hint:'离开标记落点；熔火会残留两回合',shape:'circles',color:'#e99266'},{id:'forgeSteam',name:'高压蒸汽',hint:'避开两条竖向蒸汽带，中央通道安全',shape:'lines',color:'#e5c89d'}]},
+    garden:{name:'黑山母树',phase:'万根苏生 · 荆棘侵蚀',moves:[{id:'gardenRoots',name:'荆根缚途',hint:'避开从母树伸出的三条荆根线',shape:'lines',color:'#c4b887'},{id:'gardenPoison',name:'腐花毒域',hint:'离开两片腐花圆域；净化可驱散残毒',shape:'circles',color:'#9fc67b'},{id:'gardenSanctum',name:'黑山祷告',hint:'进入明亮的安全圆，圆外将被荆潮吞没',shape:'outside',color:'#caacd2'}]}
   };
   const pos=o=>({x:o.x,y:o.y,r:o.r||0});
   const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy;const u=l?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/l)):0;return Math.hypot(p.x-a.x-u*dx,p.y-a.y-u*dy);}
-  function inPlan(h,p){if(p.shape==='lane'||p.shape==='cross')return p.lines.some(l=>segmentDistance(h,l[0],l[1])<(p.width||30)+h.r);if(p.shape==='circles')return p.zones.some(z=>distance(h,z)<z.r+h.r);if(p.shape==='rows')return p.rows.some(y=>Math.abs(h.y-y)<p.width+h.r);if(p.shape==='edge')return h.x<34+p.width||h.x>466-p.width||h.y<102+p.width||h.y>513-p.width;if(p.shape==='outside')return distance(h,p.safe)>p.safe.r-h.r;return false;}
+  const point=o=>({x:o.x,y:o.y});
+  const ARENA={left:12,right:488,top:80,bottom:535};
+  function heading(vector){const length=Math.hypot(vector?.vx??vector?.x??0,vector?.vy??vector?.y??0);return length>.001?{x:(vector.vx??vector.x)/length,y:(vector.vy??vector.y)/length}:{x:0,y:-1};}
+  function ray(origin,dir,length){return [point(origin),{x:origin.x+dir.x*length,y:origin.y+dir.y*length}];}
+  function radial(origin,count,length,angle=0){return Array.from({length:count},(_,i)=>ray(origin,{x:Math.cos(angle+i*Math.PI*2/count),y:Math.sin(angle+i*Math.PI*2/count)},length));}
+  function reflectedRay(origin,direction,length=1300,bounces=3){
+    let p={x:Math.max(ARENA.left,Math.min(ARENA.right,origin.x)),y:Math.max(ARENA.top,Math.min(ARENA.bottom,origin.y))},d=heading(direction),left=length;const segments=[];
+    for(let i=0;i<=bounces&&left>.01;i++){
+      let tx=d.x>1e-8?(ARENA.right-p.x)/d.x:d.x< -1e-8?(ARENA.left-p.x)/d.x:Infinity;
+      let ty=d.y>1e-8?(ARENA.bottom-p.y)/d.y:d.y< -1e-8?(ARENA.top-p.y)/d.y:Infinity;
+      // Reflect immediately when a cast begins on a boundary, without consuming a bounce.
+      if(tx<1e-7){d.x*=-1;tx=d.x>0?(ARENA.right-p.x)/d.x:(ARENA.left-p.x)/d.x;}
+      if(ty<1e-7){d.y*=-1;ty=d.y>0?(ARENA.bottom-p.y)/d.y:(ARENA.top-p.y)/d.y;}
+      const step=Math.min(left,tx,ty),end={x:p.x+d.x*step,y:p.y+d.y*step};segments.push([point(p),end]);left-=step;
+      if(left<.01)break;
+      if(Math.abs(step-tx)<1e-6)d.x*=-1;if(Math.abs(step-ty)<1e-6)d.y*=-1;p=end;
+    }
+    return segments;
+  }
+  function polygonHit(body,points){let inside=false;for(let i=0,j=points.length-1;i<points.length;j=i++){
+    const a=points[i],b=points[j];if(segmentDistance(body,a,b)<= (body.r||0))return true;
+    if((a.y>body.y)!==(b.y>body.y)&&body.x<(b.x-a.x)*(body.y-a.y)/(b.y-a.y)+a.x)inside=!inside;
+  }return inside;}
+  function inGeometry(body,g){if(!g)return false;const r=body.r||0;
+    if(['disk','well','relay'].includes(g.shape))return distance(body,g.center)<=g.radius+r;
+    if(g.shape==='annulus'){const d=distance(body,g.center);return d+r>=g.innerRadius&&d-r<=g.radius;}
+    if(g.shape==='outside')return distance(body,g.center)+r>g.radius;
+    if(g.shape==='circles')return g.zones.some(z=>distance(body,z)<z.r+r);
+    if(g.shape==='fan'&&g.points?.length>=3)return polygonHit(body,g.points);
+    return (g.segments||[]).some(l=>segmentDistance(body,l[0],l[1])<= (g.width||0)+r);
+  }
+  function supportGeometry(hero,vector,heroes=[],actor=vector){const key=hero.key||hero.art,center=point(hero),d=heading(vector),angle=Math.atan2(d.y,d.x);
+    if(key==='vesper')return {shape:'lines',center,width:17,segments:[[{x:ARENA.left,y:hero.y},{x:ARENA.right,y:hero.y}],[{x:hero.x,y:ARENA.top},{x:hero.x,y:ARENA.bottom}]]};
+    if(['bram','nyra','corvus','morrow','sable'].includes(key))return {shape:key==='morrow'?'well':key==='sable'?'relay':'disk',center,radius:{bram:140,nyra:160,corvus:175,morrow:155,sable:150}[key],points:key==='sable'?heroes.filter(h=>h.id!==hero.id&&distance(h,hero)<=150).map(point):[]};
+    if(key==='noah')return {shape:'lines',center,width:20,segments:[ray(hero,d,850)]};
+    if(key==='iris')return {shape:'fan',center,width:11,segments:[-.52,-.26,0,.26,.52].map(a=>ray(hero,{x:Math.cos(angle+a),y:Math.sin(angle+a)},365))};
+    if(key==='galen')return {shape:'lines',center,width:14,segments:reflectedRay(hero,d)};
+    if(key==='orion'){const points=[center];for(let i=0;i<=16;i++){const a=angle-.8+i*1.6/16;points.push({x:hero.x+Math.cos(a)*220,y:hero.y+Math.sin(a)*220});}return {shape:'fan',center,radius:220,width:0,points,segments:points.slice(1,-1).map((p,i)=>[p,points[i+2]])};}
+    if(key==='lyra')return {shape:'tether',center,width:13,segments:actor?[ [center,point(actor)] ]:[]};
+    if(key==='thalia')return {shape:'trail',center,width:28,points:actor?[point(actor)]:[],segments:[]};
+    return null;
+  }
+  function inPlan(h,p){if(['lane','cross','lines'].includes(p.shape))return p.lines.some(l=>segmentDistance(h,l[0],l[1])<(p.width||30)+(h.r||0));if(p.shape==='annulus')return inGeometry(h,p.geometry);if(p.shape==='circles')return p.zones.some(z=>distance(h,z)<z.r+(h.r||0));if(p.shape==='rows')return p.rows.some(y=>Math.abs(h.y-y)<p.width+(h.r||0));if(p.shape==='edge')return h.x<34+p.width||h.x>466-p.width||h.y<102+p.width||h.y>513-p.width;if(p.shape==='outside')return distance(h,p.safe)>p.safe.r-(h.r||0);return false;}
   const methods={
-    initTactics(){this.shield=0;this.partyPoison=null;this.delayed=[];this.hazards=[];this.shotKit=null;},
-    prepareTactics(){this.delayed=[];this.hazards=[];this.partyPoison=null;this.shotKit=null;for(const e of this.enemies){e.phase=1;e.moveIndex=0;e.armor=0;if(e.bossKind)this.planBoss(e);}},
+    initTactics(){this.shield=0;this.partyPoison=null;this.delayed=[];this.hazards=[];this.shotKit=null;this.spatial=[];},
+    prepareTactics(){this.delayed=[];this.hazards=[];this.partyPoison=null;this.shotKit=null;this.spatial=[];for(const e of this.enemies){e.phase=1;e.moveIndex=0;e.armor=0;if(e.bossKind)this.planBoss(e);}},
+    beginShotTactics(){this.spatial=[];},
+    supportPreview(hero,direction=this.current){return supportGeometry(hero,direction,this.heroes,this.current);},
+    hitGeometry(geometry,power,kind='support'){const targets=this.enemies.filter(e=>e.hp>0&&inGeometry(e,geometry));for(const e of targets)this.damage(e,power,kind);return targets;},
+    addSpatial(hero,type,options={}){const effect={owner:hero.id,key:hero.key||hero.art,type,scale:hero.supportScale||1,elapsed:0,remaining:12,period:.24,power:65,ultimate:false,hits:{},...options};this.spatial.push(effect);return effect;},
     kit(hero=this.current){return SKILLS[hero.key||hero.art]||SKILLS.evelyn;},
     skillFx(hero,ultimate,targets=[],extra={}){this.emit('skillFx',{key:hero.key||hero.art,ultimate,origin:pos(hero),targets:targets.map(pos),...extra});},
     healing(n,hero=this.current){const amount=Math.min(this.maxHp-this.hp,Math.round(n));this.hp+=amount;if(amount>0)this.emit('heal',{...pos(hero),amount});return amount;},
@@ -36,22 +93,34 @@
     tacticalSupport(hero){
       const alive=this.enemies.filter(e=>e.hp>0);if(!alive.length)return;
       const scale=hero.supportScale||1,key=hero.key||hero.art,weak=[...alive].sort((a,b)=>a.hp-b.hp)[0],strong=[...alive].sort((a,b)=>b.hp-a.hp)[0],near=[...alive].sort((a,b)=>distance(a,hero)-distance(b,hero));
-      let targets=[];const hit=(e,n,kind='support')=>this.damage(e,n*scale,kind);
+      let targets=[];const geometry=this.supportPreview(hero),hit=(e,n,kind='support')=>this.damage(e,n*scale,kind);
       switch(key){
         case'evelyn':targets=[weak];weak.expose={until:this.turn+2,mult:1.25};hit(weak,155);break;
-        case'noah':{const dx=strong.x-hero.x,dy=strong.y-hero.y,len=Math.hypot(dx,dy)||1,end={x:hero.x+dx/len*900,y:hero.y+dy/len*900};targets=alive.filter(e=>segmentDistance(e,hero,end)<e.r+23);targets.forEach(e=>hit(e,210));this.skillFx(hero,false,targets,{end});return;}
+        case'noah':targets=this.hitGeometry(geometry,230*scale);break;
         case'lucia':targets=this.heroes;this.healing(500*scale,hero);this.sanity=Math.min(100,this.sanity+5);this.protect(220*scale,hero);this.partyPoison=null;break;
         case'silas':targets=[strong];this.healing(hit(strong,250,'drain')*.7,hero);break;
         case'aster':targets=[strong];this.delayed.push({x:strong.x,y:strong.y,r:105,due:this.turn+1,power:480*scale,key,hero:hero.id});this.skillFx(hero,false,targets,{warning:true});return;
         case'rook':{let from=hero,remaining=[...alive];for(let i=0;i<3&&remaining.length;i++){remaining.sort((a,b)=>distance(a,from)-distance(b,from));const e=remaining.shift();targets.push(e);hit(e,160*Math.pow(.78,i));from=e;}break;}
         case'seraph':targets=this.heroes;this.protect(480*scale,hero);this.cleanse(false);break;
-        case'corvus':targets=alive;for(const e of alive){hit(e,45);e.poison={ticks:3,power:55*scale};}break;
-        case'nyra':targets=alive.filter(e=>distance(e,near[0])<145+e.r);for(const e of targets){hit(e,180);this.delayEnemy(e,1);}break;
-        case'orion':targets=[strong];hit(strong,265,'pierce');break;
+        case'corvus':targets=this.hitGeometry(geometry,65*scale);for(const e of targets)e.poison={ticks:3,power:65*scale};break;
+        case'nyra':targets=this.hitGeometry(geometry,240*scale);for(const e of targets)this.delayEnemy(e,1);break;
+        case'orion':targets=this.hitGeometry(geometry,300*scale,'pierce');break;
         case'mira':targets=[strong];this.current.vx*=1.18;this.current.vy*=1.18;this.energy=Math.min(100,this.energy+18);this.delayEnemy(strong,1);break;
         case'ren':targets=[near[0]];hit(near[0],95);hit(near[0],95);near[0].burn={ticks:2,power:35*scale};break;
+        case'vesper':targets=this.hitGeometry(geometry,250*scale);break;
+        case'bram':targets=this.hitGeometry(geometry,310*scale,'blast');break;
+        case'iris':targets=this.hitGeometry(geometry,235*scale);break;
+        case'galen':targets=this.hitGeometry(geometry,285*scale);break;
+        case'lyra':this.addSpatial(hero,'tether',{anchors:[hero.id],width:13,power:66,remaining:12});break;
+        case'morrow':this.addSpatial(hero,'well',{center:point(hero),radius:155,power:82,remaining:6,period:.26});break;
+        case'thalia':this.addSpatial(hero,'trail',{points:[point(this.current)],width:28,power:74,remaining:14,cap:6});break;
+        case'sable':{
+          const allies=this.heroes.filter(h=>h.id!==hero.id&&distance(h,hero)<=150&&!this.friends.has(h.id));
+          this.skillFx(hero,false,allies,{geometry:{...geometry,points:allies.map(point)}});
+          for(const ally of allies)this.support(ally);return;
+        }
       }
-      this.skillFx(hero,false,targets);
+      this.skillFx(hero,false,targets,geometry?{geometry}:{});
     },
     tacticalUltimate(){const h=this.current,key=h.key||h.art,s=h.supportScale||1,alive=this.enemies.filter(e=>e.hp>0);this.shotKit={key,mult:2.2,wallLeft:0,followLeft:0,pierce:false,drag:.55};
       switch(key){
@@ -67,8 +136,48 @@
         case'orion':this.shotKit.mult=3;this.shotKit.pierce=true;this.shotKit.followLeft=1;this.protect(650*s);break;
         case'mira':this.shotKit.drag=.3;this.current.vx*=1.25;this.current.vy*=1.25;alive.forEach(e=>this.delayEnemy(e,2));break;
         case'ren':this.shotKit.mult=2.8;this.shotKit.pierce=true;this.shotKit.followLeft=8;break;
+        case'vesper':{const geometry={shape:'lines',center:point(h),width:27,segments:radial(h,8,720)};this.skillFx(h,true,this.hitGeometry(geometry,550*s),{geometry});return;}
+        case'bram':{this.shotKit.mult=2.7;this.addSpatial(h,'mines',{remaining:10,travel:0,mines:[],power:220,ultimate:true,radius:82});this.skillFx(h,true,[],{geometry:{shape:'trail',center:point(h),points:[point(h)],segments:[],width:18}});return;}
+        case'iris':{const geometry={shape:'fan',center:point(h),width:17,segments:radial(h,12,650,Math.atan2(h.vy,h.vx))};this.skillFx(h,true,this.hitGeometry(geometry,470*s),{geometry});return;}
+        case'galen':{const d=heading(h),geometry={shape:'lines',center:point(h),width:23,segments:[...reflectedRay(h,d,1800,4),...reflectedRay(h,{x:-d.x,y:-d.y},1800,4)]};this.skillFx(h,true,this.hitGeometry(geometry,535*s),{geometry});return;}
+        case'lyra':{const anchors=this.heroes.filter(a=>a.id!==h.id).map(a=>a.id);this.addSpatial(h,'tether',{anchors,width:19,power:100,remaining:16,ultimate:true});this.skillFx(h,true,[],{geometry:{shape:'tether',center:point(h),width:19,segments:anchors.map(id=>[point(this.heroes[id]),point(h)])}});return;}
+        case'morrow':{const geometry={shape:'well',center:point(h),radius:215};for(const e of alive.filter(e=>inGeometry(e,geometry)))this.delayEnemy(e,1);this.addSpatial(h,'well',{center:point(h),radius:215,power:125,remaining:9,period:.25,ultimate:true});this.skillFx(h,true,[],{geometry});return;}
+        case'thalia':{this.shotKit.pierce=true;this.shotKit.drag=.42;this.addSpatial(h,'trail',{points:[point(h)],width:35,power:112,remaining:16,cap:8,ultimate:true});this.skillFx(h,true,[],{geometry:{shape:'trail',center:point(h),width:35,points:[point(h)],segments:[]}});return;}
+        case'sable':{this.friends.add(h.id);const allies=this.heroes.filter(a=>a.id!==h.id);this.skillFx(h,true,allies,{geometry:{shape:'relay',center:point(h),radius:650,points:allies.map(point),segments:allies.map(a=>[point(h),point(a)]),width:4}});for(const ally of allies)this.support(ally);return;}
       }
       this.skillFx(h,true,['lucia','seraph'].includes(key)?this.heroes:alive);
+    },
+    advanceSpatial(dt,previous=point(this.current)){
+      if(!this.tactical||!this.spatial.length)return;const actor=this.current;
+      for(const effect of this.spatial){const hero=this.heroes[effect.owner];if(!hero)continue;
+        if(effect.type==='mines'){
+          effect.travel+=distance(previous,actor);
+          if(effect.remaining>0&&effect.travel>=76){effect.travel%=76;effect.remaining--;const mine={...point(actor),age:0};effect.mines.push(mine);this.skillFx(hero,true,[],{tick:true,warning:true,geometry:{shape:'disk',center:point(mine),radius:effect.radius}});}
+          for(const mine of effect.mines){mine.age+=dt;if(mine.age>=.52&&!mine.done){mine.done=true;const geometry={shape:'disk',center:point(mine),radius:effect.radius};this.skillFx(hero,true,this.hitGeometry(geometry,effect.power*effect.scale,'blast'),{tick:true,geometry});}}
+          effect.mines=effect.mines.filter(m=>!m.done);continue;
+        }
+        if(effect.remaining<=0)continue;
+        if(effect.type==='trail'){
+          const last=effect.points[effect.points.length-1];if(distance(last,actor)>8&&effect.points.length<260)effect.points.push(point(actor));
+        }
+        effect.elapsed+=dt;if(effect.elapsed<effect.period)continue;effect.elapsed%=effect.period;effect.remaining--;
+        let geometry,targets;
+        if(effect.type==='tether')geometry={shape:'tether',center:point(hero),width:effect.width,segments:effect.anchors.map(id=>[point(this.heroes[id]),point(actor)])};
+        if(effect.type==='well')geometry={shape:'well',center:point(effect.center),radius:effect.radius};
+        if(effect.type==='trail')geometry={shape:'trail',center:point(hero),width:effect.width,points:effect.points.map(point),segments:effect.points.slice(1).map((p,i)=>[point(effect.points[i]),point(p)])};
+        if(!geometry)continue;
+        targets=this.enemies.filter(e=>e.hp>0&&inGeometry(e,geometry)&&(!effect.cap||(effect.hits[e.id]||0)<effect.cap));
+        // Test the visible geometry before applying pull; bosses stay fixed in the arena.
+        for(const enemy of targets){this.damage(enemy,effect.power*effect.scale,effect.type==='trail'?'pierce':'support');effect.hits[enemy.id]=(effect.hits[enemy.id]||0)+1;
+          if(effect.type==='well'&&!enemy.bossKind&&enemy.hp>0){const d=distance(enemy,effect.center),step=Math.min(effect.ultimate?23:17,Math.max(0,d-24));if(d>0){enemy.x+=(effect.center.x-enemy.x)/d*step;enemy.y+=(effect.center.y-enemy.y)/d*step;}}
+        }
+        this.skillFx(hero,effect.ultimate,targets,{tick:true,geometry,duration:effect.period+.08});
+      }
+    },
+    finishSpatial(){
+      // Mines remaining at the end of a short shot still detonate at their recorded positions.
+      for(const effect of this.spatial){if(effect.type!=='mines')continue;const hero=this.heroes[effect.owner];for(const mine of effect.mines){const geometry={shape:'disk',center:point(mine),radius:effect.radius};this.skillFx(hero,true,this.hitGeometry(geometry,effect.power*effect.scale,'blast'),{tick:true,geometry});}}
+      this.spatial=[];
     },
     wallSkill(p){if(!this.tactical||!this.powered||!this.shotKit?.wallLeft)return;const target=this.enemies.filter(e=>e.hp>0).sort((a,b)=>distance(a,p)-distance(b,p))[0];if(!target)return;this.shotKit.wallLeft--;this.damage(target,105*this.current.supportScale,'blast');this.skillFx(this.current,false,[target],{origin:pos(p),burst:true});},
     contactSkill(enemy){const k=this.shotKit;if(!this.tactical||!this.powered||!k?.followLeft)return;k.followLeft--;if(k.key==='orion'){const targets=this.enemies.filter(e=>e.hp>0&&distance(e,enemy)<135+e.r);for(const e of targets)this.damage(e,220*this.current.supportScale,'pierce');this.skillFx(this.current,true,targets,{follow:true});}else if(k.key==='ren'){this.damage(enemy,85*this.current.supportScale,'burn');this.skillFx(this.current,false,[enemy],{follow:true});}},
@@ -85,15 +194,28 @@
       if(p.shape==='rows'){p.rows=[265,435];p.width=phase===2?42:28;}
       if(p.shape==='edge')p.width=phase===2?62:43;
       if(p.shape==='outside')p.safe={x:250,y:405,r:phase===2?95:122};
+      if(p.id==='prismCross'){p.width=phase===2?27:18;p.lines=[[{x:35,y:85},{x:465,y:515}],[{x:465,y:85},{x:35,y:515}]];}
+      if(p.id==='prismRay'){p.width=phase===2?29:20;const target=this.heroes[(this.active+1)%this.heroes.length];p.lines=reflectedRay(e,{x:target.x-e.x,y:target.y-e.y},1300,3);}
+      if(p.id==='prismArmor')p.geometry={shape:'disk',center:point(e),radius:e.r+18};
+      if(p.id==='forgeRing'){p.center={x:250,y:300};p.innerRadius=phase===2?88:105;p.radius=phase===2?214:198;p.geometry={shape:'annulus',center:p.center,innerRadius:p.innerRadius,radius:p.radius};}
+      if(p.id==='forgeFalls')p.zones=[this.heroes[(this.active+1)%4],this.heroes[(this.active+3)%4]].map(h=>({...point(h),r:phase===2?83:64}));
+      if(p.id==='forgeSteam'){p.width=phase===2?37:26;p.lines=[145,355].map(x=>[{x,y:80},{x,y:535}]);}
+      if(p.id==='gardenRoots'){p.width=phase===2?29:20;p.lines=[0,1,3].map(i=>{const target=this.heroes[(this.active+i)%4],d=heading({x:target.x-e.x,y:target.y-e.y});return ray(e,d,650);});}
+      if(p.id==='gardenPoison'){p.zones=[{x:130,y:305,r:phase===2?98:79},{x:370,y:365,r:phase===2?98:79}];}
+      if(p.id==='gardenSanctum')p.safe={x:250,y:425,r:phase===2?87:112};
+      if(p.lines)p.geometry={shape:'lines',segments:p.lines.map(l=>l.map(point)),width:p.width,center:point(e)};
+      if(p.zones)p.geometry={shape:'circles',zones:p.zones.map(z=>({...z})),points:p.zones.map(point)};
+      if(p.safe)p.geometry={shape:'outside',center:point(p.safe),radius:p.safe.r};
+      if(p.rows)p.geometry={shape:'lines',segments:p.rows.map(y=>[{x:12,y},{x:488,y}]),width:p.width};
       e.plan=p;this.emit('bossTelegraph',{plan:p,counter:e.counter});
     },
     executeBoss(e){const p=e.plan,book=BOSSES[e.bossKind];if(!p)return 0;const hit=this.heroes.filter(h=>inPlan(h,p)),scale=e.phase===2?1.25:1;let damage=0;
-      if(p.id==='guard'){e.armor=Math.round(e.maxHp*.24);}
+      if(p.id==='guard'||p.id==='prismArmor'){e.armor=Math.round(e.maxHp*(e.phase===2?.27:.22));}
       else if(p.id==='fear'){this.sanity=Math.max(0,this.sanity-(e.phase===2?16:12));}
-      else{damage=this.hurtParty(hit.length?e.damage*(.5+hit.length*.45)*scale:0);if(p.id==='spores'&&hit.length)this.partyPoison={ticks:2,power:Math.round(e.damage*.18)};if(p.id==='eclipse'&&hit.length)this.sanity=Math.max(0,this.sanity-8);if(['spores','bells','tide'].includes(p.id))this.hazards.push({...JSON.parse(JSON.stringify(p)),ticks:2,power:Math.round(e.damage*.15)});}
+      else{damage=this.hurtParty(hit.length?e.damage*(.5+hit.length*.45)*scale:0);if(['spores','gardenPoison'].includes(p.id)&&hit.length)this.partyPoison={ticks:2,power:Math.round(e.damage*.18)};if(['eclipse','gardenSanctum'].includes(p.id)&&hit.length)this.sanity=Math.max(0,this.sanity-8);if(['spores','bells','tide','forgeFalls','gardenPoison'].includes(p.id))this.hazards.push({...JSON.parse(JSON.stringify(p)),ticks:2,power:Math.round(e.damage*.15)});}
       this.emit('bossCast',{plan:JSON.parse(JSON.stringify(p)),origin:pos(e),targets:hit.map(pos),damage,blocked:this.shield>0,name:book.name});e.moveIndex++;e.counter=e.cooldown;this.planBoss(e);return damage;
     },
     checkBossPhase(e){if(!e.bossKind||e.phase===2||e.hp<=0||e.hp>e.maxHp*.5)return;e.phase=2;e.counter=Math.min(e.counter,1);this.planBoss(e);this.emit('bossPhase',{boss:e.id,name:BOSSES[e.bossKind].phase,...pos(e)});}
   };
-  const api={SKILLS,BOSSES,methods,segmentDistance,inPlan};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.AbyssKit=api;
+  const api={SKILLS,BOSSES,methods,segmentDistance,inPlan,inGeometry,supportGeometry,reflectedRay};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.AbyssKit=api;
 })(typeof window!=='undefined'?window:globalThis);

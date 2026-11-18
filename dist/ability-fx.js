@@ -22,8 +22,9 @@ const AbilityFX=window.AbilityFX={
   event(e){
     if(e.type==='stage'){this.reset();return;}
     if(e.type==='skillFx'){
-      this.add({...e,tag:'skill',duration:e.ultimate?2.35:e.fall?1.5:1.3});
-      if(window.ArcanaAudio)ArcanaAudio.play(e.key,!!e.ultimate);
+      if(e.tick&&['tether','well','trail'].includes(e.geometry?.shape))this.effects=this.effects.filter(f=>!(f.tag==='skill'&&f.key===e.key&&f.geometry?.shape===e.geometry.shape));
+      this.add({...e,tag:'skill',duration:e.duration||(e.tick?(e.warning?.52:.32):e.ultimate?2.35:e.fall?1.5:1.3)});
+      if(window.ArcanaAudio&&!e.tick)ArcanaAudio.play(e.key,!!e.ultimate);
     }
     if(e.type==='bossCast'){
       this.add({...e,tag:'boss',duration:2.15});
@@ -85,6 +86,7 @@ const AbilityFX=window.AbilityFX={
     this.sprite('seal',x,y+r*.7,r*2.3,r*.85,0,.42);ctx.restore();
   },
   plan(p,alpha=.14,attack=false){
+    if(window.SpatialFX&&SpatialFX.plan(p,alpha))return;
     ctx.save();ctx.beginPath();ctx.rect(12,80,476,455);ctx.clip();ctx.globalAlpha*=alpha;
     ctx.fillStyle=p.color;ctx.strokeStyle=p.color;ctx.lineWidth=1.2;
     if(p.shape==='lane'||p.shape==='cross'){
@@ -109,6 +111,7 @@ const AbilityFX=window.AbilityFX={
   drawUnder(t){
     this.drawBudget=reduced?65:160;
     if(!game.tactical)return;if(reduced)t=0;
+    if(window.SpatialFX)SpatialFX.preview();
     const cinematic=this.effects.reduce((n,f)=>Math.max(n,(f.ultimate||f.tag==='boss')?this.envelope(f.age/f.duration):0),0);
     if(cinematic){ctx.fillStyle='rgba(2,6,12,'+(cinematic*.24)+')';ctx.fillRect(0,70,500,490);}
     for(const hazard of game.hazards){
@@ -124,6 +127,7 @@ const AbilityFX=window.AbilityFX={
     }
   },
   drawSkill(f,t){
+    if(window.SpatialFX&&SpatialFX.drawSkill(f,t))return;
     const k=AbyssKit.SKILLS[f.key],c=k.color,o=f.origin,p=reduced?.55:Math.min(1,f.age/f.duration),a=this.envelope(f.age/f.duration),u=f.ultimate?1.6:1;
     const targets=f.impact?[f.impact]:f.targets.length?f.targets:[o];
     ctx.save();ctx.globalAlpha*=a;
@@ -222,6 +226,7 @@ const AbilityFX=window.AbilityFX={
     ctx.restore();
   },
   drawBoss(f,t){
+    if(window.SpatialFX&&SpatialFX.drawBoss(f,t))return;
     const p=f.plan,u=reduced?.55:Math.min(1,f.age/f.duration),a=this.envelope(f.age/f.duration);
     ctx.save();ctx.globalAlpha*=a;this.plan(p,.2,true);
     if(p.id==='gaze'){

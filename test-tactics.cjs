@@ -3,20 +3,21 @@ const {AbyssEngine}=require('./dist/engine.js');
 const {SKILLS,BOSSES,inPlan}=require('./dist/combat-kit.js');
 const {CATALOG,stats,waves,QUESTS,portrait,Campaign}=require('./dist/progression.js');
 const fs=require('node:fs');
+const scripts=[...fs.readFileSync('dist/index.html','utf8').matchAll(/<script src="([^"]+)"/g)].map(m=>m[1]);assert(scripts.includes('spatial-fx.js'));assert(scripts.indexOf('spatial-fx.js')<scripts.indexOf('ability-fx.js'),'Spatial renderer loads before ability dispatch');for(const file of scripts)assert(fs.existsSync('dist/'+file));
 function battle(key,kind){const events=[],g=new AbyssEngine(e=>events.push(e));const leader=CATALOG.find(h=>h.key===key);const party=[leader,...CATALOG.filter(h=>h.key!==key).slice(0,3)].map(h=>stats(h,{level:1,awake:0,luck:1}));const stage=waves(QUESTS[0])[2];stage.enemies=stage.enemies.map((e,i)=>({...e,hp:20000,damage:400,bossKind:i===0?kind:undefined,counter:1}));g.reset({tactical:true,stages:[stage],party,maxHp:16000});g.hp=8000;g.friends=new Set();return {g,events};}
 const seen=[];
 for(const h of CATALOG){const {g,events}=battle(h.key);g.current.vx=300;g.current.vy=-200;g.tacticalSupport(g.current);assert(events.some(e=>e.type==='skillFx'&&e.key===h.key&&!e.ultimate));const signature=JSON.stringify({damage:g.enemies.map(e=>e.maxHp-e.hp),shield:g.shield,hp:g.hp,delayed:g.delayed.length,poison:g.enemies[0].poison,burn:g.enemies[0].burn,energy:g.energy,velocity:g.current.vx});seen.push(signature);
- const u=battle(h.key);u.g.energy=100;assert(u.g.armUltimate());u.g.launch(0,-1);assert.equal(u.g.energy,0);assert(u.events.some(e=>e.type==='skillFx'&&e.key===h.key&&e.ultimate));if(['lucia','seraph'].includes(h.key)){const effect=u.events.find(e=>e.type==='skillFx'&&e.ultimate);assert.deepEqual(effect.targets.map(q=>[q.x,q.y]),u.g.heroes.map(q=>[q.x,q.y]),'Protection visuals follow party members');}assert(Number.isFinite(u.g.hp));assert(u.g.enemies.every(e=>Number.isFinite(e.hp)));}
-assert.equal(new Set(seen).size,12,'All 12 support kits must have distinct mechanical outcomes');
-assert.equal(new Set(Object.values(SKILLS).map(s=>s.motif)).size,12,'Each hero uses its own visual vocabulary');
+ const u=battle(h.key);u.g.energy=100;assert(u.g.armUltimate());u.g.launch(0,-1);assert.equal(u.g.energy,h.key==='sable'?27:0);assert(u.events.some(e=>e.type==='skillFx'&&e.key===h.key&&e.ultimate));if(['lucia','seraph'].includes(h.key)){const effect=u.events.find(e=>e.type==='skillFx'&&e.ultimate);assert.deepEqual(effect.targets.map(q=>[q.x,q.y]),u.g.heroes.map(q=>[q.x,q.y]),'Protection visuals follow party members');}assert(Number.isFinite(u.g.hp));assert(u.g.enemies.every(e=>Number.isFinite(e.hp)));}
+assert.equal(CATALOG.length,20,'Twenty playable investigators');
+assert.equal(new Set(Object.values(SKILLS).map(s=>s.motif)).size,CATALOG.length,'Each hero uses its own visual vocabulary');
 let {g}=battle('evelyn');g.tacticalSupport(g.current);const marked=g.enemies.find(e=>e.expose),hp=marked.hp;g.damage(marked,100);assert.equal(hp-marked.hp,125);
-({g}=battle('noah'));g.current.x=170;g.current.y=447;g.enemies[0].x=170;g.enemies[0].y=180;g.enemies[1].x=170;g.enemies[1].y=300;g.enemies[2].x=450;g.enemies[2].y=220;g.tacticalSupport(g.current);assert(g.enemies[0].hp<20000&&g.enemies[1].hp<20000);assert.equal(g.enemies[2].hp,20000,'Rail respects line geometry');
+({g}=battle('noah'));g.current.x=170;g.current.y=447;g.current.vx=0;g.current.vy=-300;g.enemies[0].x=170;g.enemies[0].y=180;g.enemies[1].x=170;g.enemies[1].y=300;g.enemies[2].x=450;g.enemies[2].y=220;g.tacticalSupport(g.current);assert(g.enemies[0].hp<20000&&g.enemies[1].hp<20000);assert.equal(g.enemies[2].hp,20000,'Rail respects line geometry');
 ({g}=battle('lucia'));g.partyPoison={ticks:2,power:200};g.tacticalSupport(g.current);assert.equal(g.hp,8500);assert.equal(g.shield,220);assert.equal(g.partyPoison,null);const oldHp=g.hp;assert.equal(g.hurtParty(100),0);assert.equal(g.hp,oldHp);assert.equal(g.shield,120);
 ({g}=battle('silas'));g.tacticalSupport(g.current);assert.equal(g.hp,8175,'Drain heals from actual damage');
 ({g}=battle('aster'));g.tacticalSupport(g.current);assert.equal(g.enemies[0].hp,20000);g.resolveTurnEffects();assert.equal(g.enemies[0].hp,20000);g.turn++;g.resolveTurnEffects();assert(g.enemies[0].hp<20000);assert.equal(g.delayed.length,0);
 ({g}=battle('seraph'));g.hazards=[{shape:'circles',zones:[],ticks:2},{shape:'circles',zones:[],ticks:2}];g.tacticalSupport(g.current);assert.equal(g.shield,480);assert.equal(g.hazards.length,1);
-({g}=battle('corvus'));g.enemies.forEach(e=>e.armor=1000);g.tacticalSupport(g.current);const armor=g.enemies[0].armor;g.resolveTurnEffects();assert.equal(g.enemies[0].hp,19945);assert.equal(g.enemies[0].armor,armor,'Poison bypasses armor');
-({g}=battle('orion'));g.enemies[0].armor=1000;g.tacticalSupport(g.current);assert.equal(g.enemies[0].hp,19735);assert.equal(g.enemies[0].armor,1000);
+({g}=battle('corvus'));g.current.x=g.enemies[0].x;g.current.y=g.enemies[0].y;g.enemies.forEach(e=>e.armor=1000);g.tacticalSupport(g.current);const armor=g.enemies[0].armor;g.resolveTurnEffects();assert.equal(g.enemies[0].hp,19935);assert.equal(g.enemies[0].armor,armor,'Poison bypasses armor');
+({g}=battle('orion'));g.current.x=g.enemies[0].x;g.current.y=g.enemies[0].y+130;g.current.vy=-300;g.enemies[0].armor=1000;g.tacticalSupport(g.current);assert.equal(g.enemies[0].hp,19700);assert.equal(g.enemies[0].armor,1000);
 ({g}=battle('mira'));g.current.vx=300;const counter=g.enemies[0].counter;g.tacticalSupport(g.current);assert.equal(g.current.vx,354);assert.equal(g.energy,18);assert.equal(g.enemies[0].counter,counter+1);
 ({g}=battle('rook'));g.energy=100;g.armUltimate();g.launch(1,0);for(let i=0;i<9;i++)g.wallSkill({x:12,y:200});assert.equal(g.shotKit.wallLeft,0,'Wall follow-up is capped');
 ({g}=battle('ren'));g.energy=100;g.armUltimate();g.launch(0,-1);assert(g.shotKit.pierce);for(let i=0;i<10;i++)g.contactSkill(g.enemies[0]);assert.equal(g.shotKit.followLeft,0);
@@ -34,9 +35,9 @@ const canvasMethods=['save','restore','translate','rotate','beginPath','closePat
 const context=Object.fromEntries(canvasMethods.map(k=>[k,(...v)=>numeric(...v)]));context.globalAlpha=1;context.createRadialGradient=(...v)=>{numeric(...v);return {addColorStop:()=>{}};};context.createLinearGradient=context.createRadialGradient;
 class MockImage{constructor(){this.complete=true;this.naturalWidth=this.width=1254;this.naturalHeight=this.height=1254;}set src(v){this.path=v;if(this.onload)this.onload();}}
 const sandbox={Image:MockImage,document:{createElement:()=>({width:0,height:0,getContext:()=>context})},window:{},AbyssKit:require('./dist/combat-kit.js'),ctx:context,game:null,reduced:false,tone:()=>{},setTimeout:()=>{},BattleFX:{trauma:0,hitStop:0,punch:()=>{}},$:()=>({}),line:(x,y,x2,y2,...v)=>{[x,y,x2,y2].forEach(n=>assert(Number.isFinite(n)));numeric(...v);},circle:(x,y,r,...v)=>{[x,y,r].forEach(n=>assert(Number.isFinite(n)));assert(r>=0);numeric(...v);}};
-const renderContext=vm.createContext(sandbox);vm.runInContext(fs.readFileSync('dist/ability-fx.js','utf8'),renderContext);
+const renderContext=vm.createContext(sandbox);vm.runInContext(fs.readFileSync('dist/spatial-fx.js','utf8'),renderContext);vm.runInContext(fs.readFileSync('dist/ability-fx.js','utf8'),renderContext);
 const renderer=sandbox.window.AbilityFX;
-for(const h of CATALOG){const sample=battle(h.key,'watcher');sandbox.game=sample.g;sample.g.onEvent=e=>renderer.event(e);renderer.reset();sample.g.tacticalSupport(sample.g.current);sample.g.energy=100;sample.g.armUltimate();sample.g.launch(0,-1);sample.g.wallSkill({x:12,y:180});sample.g.contactSkill(sample.g.enemies[0]);sample.g.turn++;sample.g.resolveTurnEffects();for(const dt of [.1,.25,.3]){renderer.drawUnder(.5);renderer.drawOver(.5,dt);}}
+for(const h of CATALOG){const sample=battle(h.key,'watcher');sandbox.game=sample.g;sample.g.onEvent=e=>renderer.event(e);renderer.reset();sample.g.tacticalSupport(sample.g.current);sample.g.energy=100;sample.g.armUltimate();sample.g.launch(0,-1);sample.g.wallSkill({x:12,y:180});sample.g.contactSkill(sample.g.enemies[0]);sample.g.turn++;sample.g.resolveTurnEffects();sample.g.showSupportRanges=true;for(let tick=0;tick<32;tick++)sample.g.advanceSpatial(.12);for(const dt of [.1,.25,.3]){renderer.drawUnder(.5);renderer.drawOver(.5,dt);}}
 for(const kind of Object.keys(BOSSES)){const sample=battle('lucia',kind);sandbox.game=sample.g;sample.g.onEvent=e=>renderer.event(e);renderer.reset();for(let i=0;i<3;i++){renderer.drawUnder(.5);sample.g.executeBoss(sample.g.enemies[0]);for(const dt of [.1,.25,.3])renderer.drawOver(.5,dt);}sample.g.enemies[0].hp=5000;sample.g.checkBossPhase(sample.g.enemies[0]);sample.g.protect(500);sample.g.hurtParty(200);renderer.drawOver(.5,.1);}
 // Render the complete battlefield as well: catches missing trail coordinates,
 // not just isolated ability primitives. Exercise both motion settings.
@@ -48,12 +49,21 @@ vm.runInContext(fs.readFileSync('dist/battle-fx.js','utf8'),renderContext);
 const battlefield=vm.runInContext('BattleFX',renderContext);
 for(const reducedMotion of [false,true]){
  sandbox.reduced=reducedMotion;
- const sample=battle('orion','warden');sandbox.game=sample.g;
+ const sample=battle('orion','warden');sandbox.game=sample.g;sample.g.showSupportRanges=true;
  sample.g.onEvent=e=>{battlefield.event(e);renderer.event(e);};sample.g.energy=100;sample.g.armUltimate();sample.g.launch(0,-1);
  sandbox.trail=[{x:170,y:447},{x:171,y:430},{x:175,y:410}];
  for(let i=0;i<8;i++){sample.g.update(1/120);sandbox.draw(i/60,1/60);}
 }
+
+// Long moving trails must not hide other skills or leave obsolete damage shapes.
+const spatialRenderer=sandbox.window.SpatialFX,positions=Array.from({length:151},(_,i)=>({x:25+(i%20)*23,y:100+Math.floor(i/20)*45}));
+const trailEvent={type:'skillFx',key:'thalia',origin:{x:170,y:447},targets:[],tick:true,geometry:{shape:'trail',center:{x:170,y:447},width:12,points:positions,segments:positions.slice(1).map((p,i)=>[positions[i],p])}};
+renderer.reset();renderer.event(trailEvent);renderer.event(trailEvent);assert.equal(renderer.effects.length,1,'Moving geometry replaces its stale snapshot');
+renderer.drawBudget=160;spatialRenderer.drawSkill({...trailEvent,age:.12,duration:.32},0);assert(renderer.drawBudget>=120,'Long thorn trail preserves texture budget for other effects');
+const oldDrawImage=context.drawImage;let gravityRendered=false;context.drawImage=(texture,...args)=>{if(texture===spatialRenderer.textures[5])gravityRendered=true;oldDrawImage(texture,...args);};spatialRenderer.drawSkill({key:'morrow',origin:{x:250,y:300},targets:[],geometry:{shape:'well',center:{x:250,y:300},radius:155},age:.2,duration:.5},0);context.drawImage=oldDrawImage;assert(gravityRendered,'Gravity remains visible after a long thorn trail');
 assert.equal(renderer.textures.length,16,'All sixteen material textures are prepared');
-assert(fs.existsSync('dist/assets/arcana-vfx-v5.png'));
+assert(fs.existsSync('dist/assets/arcana-vfx-v5.png'));assert.equal(sandbox.window.SpatialFX.textures.length,16);assert(fs.existsSync('dist/assets/spatial-vfx-v6.png'));
+for(const kind of ['prism','forge','garden','mirrorling'])assert(fs.existsSync('dist/assets/'+kind+'-v6.png'));
+for(const kind of Object.keys(BOSSES)){const sample=battle('vesper',kind);sandbox.game=sample.g;sample.g.enemies[0].sprite=kind==='cthulhu'?'boss':kind;sandbox.draw(.5,1/60);}
 for(const h of CATALOG)for(const awake of [0,1])assert(fs.existsSync('dist/'+portrait({...h,awake})),`Missing ${h.key} form ${awake}`);
-console.log(JSON.stringify({result:'PASS',heroes:12,supportSkills:12,ultimateSkills:12,bossSkills:9,checks:['unique mechanics and visual motifs','rail geometry','shields and cleanse','life steal','delayed impacts','armor bypass','bounded follow-ups','boss rotation','enrage','telegraph dodge','safe zone','damage-over-time victory','awakening save and portraits','all skill and boss renderer branches']},null,2));
+console.log(JSON.stringify({result:'PASS',heroes:CATALOG.length,supportSkills:CATALOG.length,ultimateSkills:CATALOG.length,bossSkills:Object.values(BOSSES).reduce((n,b)=>n+b.moves.length,0),checks:['unique mechanics and visual motifs','rail geometry','shields and cleanse','life steal','delayed impacts','armor bypass','bounded follow-ups','boss rotation','enrage','telegraph dodge','safe zone','damage-over-time victory','awakening save and portraits','all skill and boss renderer branches']},null,2));

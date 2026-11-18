@@ -33,3 +33,25 @@
 @media(prefers-reduced-motion:reduce){.skill-cutin.play{animation:none;opacity:0}}
 
 .training-controls{grid-template-columns:repeat(4,1fr)}.training-controls button{padding-inline:2px}
+
+/* Six expeditions, free covenants and readable spatial skill controls. */
+.chapter-tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.chapter-tabs button{min-width:0;min-height:53px}
+.chapter-tabs b{display:block;line-height:1.45}
+.chapter-strategy{margin:-4px 0 17px;padding:10px 12px;border-left:2px solid #ad9863;background:#14251e99;font:10px/1.8 var(--sans);color:#b2c3b3}
+.chapter-strategy>span{display:block;font:10px var(--serif);letter-spacing:2px;color:#dbc48b;margin-bottom:5px}
+.chapter-3{background-image:linear-gradient(90deg,#172138ee,#281a3c55),url('assets/temple-v2.jpg')}
+.chapter-4{background-image:linear-gradient(90deg,#261b12ee,#4a201b55),url('assets/temple-v2.jpg')}
+.chapter-5{background-image:linear-gradient(90deg,#10291fee,#1c372344),url('assets/observatory-v3.jpg')}
+.chapter-3 img,.chapter-4 img,.chapter-5 img{right:-4%;filter:drop-shadow(0 5px 16px #000)}
+.new-covenant{display:inline-block;color:#d7c18e;font:10px var(--serif);letter-spacing:3px;border-block:1px solid #b49e5e55;padding:5px 13px}
+.rate-detail{font-size:10px!important;color:#a4bca8!important;margin:5px 0 15px!important}
+.range-note{font-size:10px!important;line-height:1.8!important;color:#9eb7a8!important;margin:10px 0 16px!important}
+#support-range{min-height:29px;min-width:104px;border:1px solid #6a795044;background:#13261b;color:#9faf91;border-radius:3px;letter-spacing:.5px}
+#support-range[aria-pressed="true"]{color:#ead7a3;border-color:#bd9e6077;background:#3b4325}
+.game-bottom{gap:6px}
+.training-controls>span{font-size:8px;line-height:1.65}
+@media(max-width:500px){.summon-art{bottom:179px}.summon-controls .screen-note{font-size:8px;line-height:1.6}.chapter-tabs button{min-height:49px}.chapter-strategy{font-size:9px;padding:8px 10px}.new-covenant{font-size:9px;letter-spacing:2px}.quest-screen .screen-heading{gap:8px}.quest-screen .screen-heading h2{font-size:21px;letter-spacing:2px}.quest-screen .screen-heading .text-button{font-size:9px}}
+@media(max-width:360px){.chapter-tabs{gap:5px}.chapter-tabs b{letter-spacing:0}.quest-screen .screen-heading h2{font-size:19px;letter-spacing:1px}.quest-screen .small-counter{font-size:8px}.training-controls>span{font-size:7px;letter-spacing:0}#support-range{min-width:96px;font-size:9px}}
+
+@media(max-width:360px){.summon-results:not(.single-pull){grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 7px}.summon-results:not(.single-pull) .recruit-caption strong{font-size:10px;letter-spacing:0}.summon-results:not(.single-pull) .recruit-caption>span{font-size:6px;letter-spacing:.5px}.summon-results:not(.single-pull) .recruit-badge{font-size:7px;padding:3px 4px}.summon-results:not(.single-pull) .recruit-caption{padding:22px 5px 7px}}

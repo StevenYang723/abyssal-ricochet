@@ -10,15 +10,32 @@
     ['nyra','奈莉娅','潮汐神谕',6,'潮','#80ddcf',190,0,'万海归潮','最后一位听得懂深海之语的王女。'],
     ['orion','奥利安','星骸骑士',6,'幽','#c5afe9',215,3,'群星终焉','他的誓言，比他所侍奉的王国更长久。'],
     ['mira','米拉','时钟匠',5,'辉','#d4ae6b',170,1,'第十三时刻','每一只停摆的怀表，都封存着一场灾厄。'],
-    ['ren','莲','封印剑士',5,'焰','#de858b',200,3,'无明斩', '他以自己的名字，封住了刀中的恶梦。']
+    ['ren','莲','封印剑士',5,'焰','#de858b',200,3,'无明斩', '他以自己的名字，封住了刀中的恶梦。'],
+    ['vesper','薇丝珀','镜月修女',5,'幽','#c7a6ec',174,1,'棱光十字','她打碎了神像，却在每一片镜中看见相同的月亮。'],
+    ['bram','布拉姆','熔星爆破手',4,'焰','#e8a069',184,1,'熔星震爆','他替矿井里的亡者，留下最后一声轰鸣。'],
+    ['iris','艾瑞丝','迷途测绘师',4,'潮','#77cfc6',158,1,'千帆星雨','地图上没有归途，她便为每一个同伴重新画一条。'],
+    ['galen','盖伦','银镜术士',5,'辉','#b6d7ea',169,1,'镜廊折光','镜面从不说谎，只会把真相折向另一个方向。'],
+    ['lyra','莉拉','挽歌弦师',5,'幽','#d5a5e5',161,1,'命运弦线','她与同伴之间的琴弦，连死亡也无法轻易切断。'],
+    ['morrow','莫罗','失重观星者',6,'幽','#9caff3',181,1,'坍缩星井','他曾为一颗死星守夜，直到群星开始向他坠落。'],
+    ['thalia','塔莉娅','黑荆园丁',4,'森','#99c17f',163,1,'荆棘行迹','每一寸被吞没的道路，都会在她身后重新生长。'],
+    ['sable','塞布尔','终夜指挥家',6,'辉','#e2c58a',172,1,'共鸣接力','终夜的乐章没有独奏者，只有仍然相互回应的人。']
   ];
-  const CATALOG=[...base.HEROES.map((h,i)=>({...h,key:h.art,rarity:i===0?5:4,element:['森','潮','辉','幽'][i],supportKind:i})),...extra.map(([key,name,role,rarity,element,color,attack,supportKind,skill,lore])=>({key,art:key,name,role,rarity,element,color,attack,supportKind,skill,lore,type:['aster','nyra','ren'].includes(key)?'贯通':'反射',description:['追击生命最低的敌人。','对全体敌人发起远程攻击。','恢复生命与理智，并攻击最近的敌人。','集中攻击生命最高的敌人。'][supportKind]}))];
+  const CATALOG=[...base.HEROES.map((h,i)=>({...h,key:h.art,rarity:i===0?5:4,element:['森','潮','辉','幽'][i],supportKind:i})),...extra.map(([key,name,role,rarity,element,color,attack,supportKind,skill,lore])=>({key,art:key,name,role,rarity,element,color,attack,supportKind,skill,lore,type:['aster','nyra','ren','iris','lyra','morrow','thalia'].includes(key)?'贯通':'反射',description:['追击生命最低的敌人。','对全体敌人发起远程攻击。','恢复生命与理智，并攻击最近的敌人。','集中攻击生命最高的敌人。'][supportKind]}))];
   for(const h of CATALOG){const k=kit.SKILLS[h.key];h.skill=k.support;h.ultimate=k.ultimate;h.description=k.text;h.ultimateDescription=k.ultText;h.combatRole=k.role;h.formTitle=k.form;h.color=k.color;}
-  const portrait=h=>`assets/${h.key||h.art}${h.awake>0?'-awakened-v5':'-v2'}.jpg`;
-  const CHAPTERS=[{name:'雾锁印斯茅斯',en:'INNSMOUTH',story:'一封潮湿的信，把你带到这座没有钟声的港口。',color:'#7fc7b0'}, {name:'沉没的圣堂',en:'THE DROWNED CHAPEL',story:'钟楼沉入海底之后，祷告仍然没有停止。',color:'#a6b8e4'}, {name:'群星归位之夜',en:"R’LYEH",story:'在梦与现实的缝隙中，旧日之城终于浮出水面。',color:'#d2a6cb'}];
-  const names=['潮湿的来信','没有归途的街','雾港的凝视者','深海阶梯','无声的祷告','圣堂守门人','异星回廊','群星之门','旧日支配者'];
+  const newKeys=new Set(['vesper','bram','iris','galen','lyra','morrow','thalia','sable']);
+  const portrait=h=>`assets/${h.key||h.art}${newKeys.has(h.key||h.art)?(h.awake>0?'-awakened-v6':'-v6'):(h.awake>0?'-awakened-v5':'-v2')}.jpg`;
+  const UNLIMITED_GEMS=true;
+  const CHAPTERS=[
+    {name:'雾锁印斯茅斯',en:'INNSMOUTH',story:'一封潮湿的信，把你带到这座没有钟声的港口。',color:'#7fc7b0',bossKey:'watcher',bossArt:'assets/watcher-v3.png',strategy:'借助同伴援护突破雾港，离开凝视光束与孢子毒池。'},
+    {name:'沉没的圣堂',en:'THE DROWNED CHAPEL',story:'钟楼沉入海底之后，祷告仍然没有停止。',color:'#a6b8e4',bossKey:'warden',bossArt:'assets/warden-v3.png',strategy:'十字光带留下四角空隙，破甲与毒伤可以穿透圣堂铁壁。'},
+    {name:'群星归位之夜',en:"R’LYEH",story:'在梦与现实的缝隙中，旧日之城终于浮出水面。',color:'#d2a6cb',bossKey:'cthulhu',bossArt:'assets/boss-v2.png',strategy:'预留落点躲开黑潮；蚀月降临前进入安全圆。'},
+    {name:'碎月镜廊',en:'THE FRACTURED MOON',story:'月光在破碎镜廊里折返，每一道影子都在寻找自己的主人。',color:'#bba6e5',bossKey:'prism',bossArt:'assets/prism-v6.png',strategy:'镜柱将战场分成斜向通道。十字激光与折射光束适合贯穿分散敌人。'},
+    {name:'熔星铸炉',en:'THE STARFORGE',story:'矿工从地底挖出一颗仍在跳动的星，铸炉从此不再熄灭。',color:'#dfa26e',bossKey:'forge',bossArt:'assets/forge-v6.png',strategy:'绕过炉心进入侧翼。圆形爆破能清理聚集的铸炉眷属，热浪中注意内外安全区。'},
+    {name:'黑山胎园',en:'THE BLACKWOOD CRADLE',story:'失踪者的低语藏在树根深处，黑山的母亲正在等待下一次春天。',color:'#9dbc82',bossKey:'garden',bossArt:'assets/garden-v6.png',strategy:'用引力井聚拢小怪，再以荆棘轨迹、毒雾或连携引爆清场；避免停留在根系和毒域中。'}
+  ];
+  const names=['潮湿的来信','没有归途的街','雾港的凝视者','深海阶梯','无声的祷告','圣堂守门人','异星回廊','群星之门','旧日支配者','镜中的陌生人','折返的月光','镜渊织母','落星矿道','永夜炉心','熔星监工','不眠的苗圃','荆棘摇篮','黑山母树'];
   const QUESTS=names.map((name,i)=>({id:i,name,chapter:Math.floor(i/3),number:`${Math.floor(i/3)+1}-${i%3+1}`,cost:6+i*2,level:1+i*4,power:700+i*200,gold:700+i*220,exp:18+i*6,gems:150+i*25,sigils:1+Math.floor(i/3),boss:i%3===2}));
-  const MISSIONS=[{id:'first',name:'第一次调查',desc:'完成任意关卡 1 次',stat:'wins',target:1,gems:300,gold:1000},{id:'summoner',name:'回应群星的呼唤',desc:'累计召唤 10 次',stat:'pulls',target:10,gems:600,gold:2000},{id:'training',name:'黑暗中的灯火',desc:'累计提升角色等级 10 次',stat:'levels',target:10,gems:300,gold:2500},{id:'chapter1',name:'雾港调查报告',desc:'通关主线 1-3',quest:2,gems:500,gold:3000},{id:'chapter2',name:'沉没的秘密',desc:'通关主线 2-3',quest:5,gems:700,gold:5000},{id:'chapter3',name:'让群星归于沉寂',desc:'通关主线 3-3',quest:8,gems:1200,gold:10000}];
+  const MISSIONS=[{id:'first',name:'第一次调查',desc:'完成任意关卡 1 次',stat:'wins',target:1,gems:300,gold:1000},{id:'summoner',name:'回应群星的呼唤',desc:'累计召唤 10 次',stat:'pulls',target:10,gems:600,gold:2000},{id:'training',name:'黑暗中的灯火',desc:'累计提升角色等级 10 次',stat:'levels',target:10,gems:300,gold:2500},{id:'chapter1',name:'雾港调查报告',desc:'通关主线 1-3',quest:2,gems:500,gold:3000},{id:'chapter2',name:'沉没的秘密',desc:'通关主线 2-3',quest:5,gems:700,gold:5000},{id:'chapter3',name:'让群星归于沉寂',desc:'通关主线 3-3',quest:8,gems:1200,gold:10000},{id:'chapter4',name:'镜中的月亮',desc:'通关主线 4-3',quest:11,gems:1400,gold:12000},{id:'chapter5',name:'熄灭亡星',desc:'通关主线 5-3',quest:14,gems:1600,gold:15000},{id:'chapter6',name:'黎明不会缺席',desc:'通关主线 6-3',quest:17,gems:2000,gold:18000}];
   const KEY='abyssal-campaign-v3';
   const integer=(v,min,max,fallback=min)=>Number.isFinite(v)?Math.max(min,Math.min(max,Math.floor(v))):fallback;
   const fresh=(now=Date.now())=>({version:3,gems:3000,gold:18000,exp:160,sigils:6,stamina:60,staminaAt:now,rankExp:0,owned:Object.fromEntries(CATALOG.slice(0,4).map(h=>[h.key,{level:1,awake:0,shards:0,luck:1}])),team:CATALOG.slice(0,4).map(h=>h.key),clears:{},stats:{wins:0,pulls:0,levels:0},claimed:[],pity:0,daily:'',activeRun:null,lastResults:[]});
@@ -36,7 +53,36 @@
     return s;
   }
   function stats(h,owned){const o=owned||{level:1,awake:0,luck:1},scale=1+(o.level-1)*.045+o.awake*.12,k=kit.SKILLS[h.key];return {...h,description:k.text,skill:k.support,ultimate:k.ultimate,ultimateDescription:k.ultText,formTitle:k.form,level:o.level,awake:o.awake,luck:o.luck,attack:Math.round(h.attack*scale),hp:Math.round((1800+h.rarity*70)*scale),supportScale:scale};}
-  function waves(q){const c=q.chapter,scale=.62+q.id*.23;return [0,1,2].map((wave)=>{const original=base.STAGES[c];const modifier=scale*(.72+wave*.20);return {...original,name:`${q.name} · ${wave===2?'首领':`第 ${wave+1} 战`}`,title:wave===2?original.title:['巡游的深潜者','深渊的眷属'][wave],reward:100, enemies:original.enemies.map((e,i)=>({...e,sprite:i===0&&wave===2?['watcher','warden','boss'][c]:'minion',bossKind:i===0&&wave===2?['watcher','warden','cthulhu'][c]:undefined,counter:i===0&&wave===2?1:e.cooldown,hp:Math.round(e.hp*modifier*(i===0&&wave===2?1.9:1)),damage:Math.round(e.damage*(.7+q.id*.13)),art:wave<2&&i===0?'deep-one':e.art,name:wave<2&&i===0?'精英深潜者':e.name,x:wave===1?500-e.x:e.x}))};});}
+  const layouts={
+    prism:[
+      {mobs:[[105,186],[250,244],[395,186],[120,350],[380,350]],pillars:[{x:250,y:350,r:24}]},
+      {mobs:[[110,180],[250,180],[390,180],[110,340],[390,340]],pillars:[{x:188,y:280,r:19},{x:312,y:280,r:19}]},
+      {mobs:[[95,280],[405,280],[150,375],[350,375]],pillars:[{x:250,y:315,r:22}]}
+    ],
+    forge:[
+      {mobs:[[125,180],[375,180],[180,300],[320,300],[250,390]],pillars:[{x:100,y:315,r:23},{x:400,y:315,r:23}]},
+      {mobs:[[100,200],[250,175],[400,200],[180,350],[320,350]],pillars:[{x:250,y:280,r:25}]},
+      {mobs:[[95,285],[405,285],[195,365],[305,365]],pillars:[{x:140,y:365,r:17},{x:360,y:365,r:17}]}
+    ],
+    garden:[
+      {mobs:[[170,170],[330,170],[250,260],[130,355],[370,355]],pillars:[{x:105,y:255,r:21},{x:395,y:255,r:21}]},
+      {mobs:[[100,190],[250,200],[400,190],[200,340],[300,340]],pillars:[{x:125,y:390,r:20},{x:375,y:390,r:20}]},
+      {mobs:[[140,275],[360,275],[95,375],[405,375]],pillars:[{x:205,y:350,r:18},{x:295,y:350,r:18}]}
+    ]
+  };
+  function waves(q){
+    const c=q.chapter,scale=.62+q.id*.23;
+    if(c<3)return [0,1,2].map(wave=>{const original=base.STAGES[c],modifier=scale*(.72+wave*.20);return {...original,name:`${q.name} · ${wave===2?'首领':`第 ${wave+1} 战`}`,title:wave===2?original.title:['巡游的深潜者','深渊的眷属'][wave],reward:100,enemies:original.enemies.map((e,i)=>({...e,sprite:i===0&&wave===2?['watcher','warden','boss'][c]:'minion',bossKind:i===0&&wave===2?CHAPTERS[c].bossKey:undefined,counter:i===0&&wave===2?1:e.cooldown,hp:Math.round(e.hp*modifier*(i===0&&wave===2?1.9:1)),damage:Math.round(e.damage*(.7+q.id*.13)),art:wave<2&&i===0?'deep-one':e.art,name:wave<2&&i===0?'精英深潜者':e.name,x:wave===1?500-e.x:e.x}))};});
+    const chapter=CHAPTERS[c],kind=chapter.bossKey,progress=q.id-9,local=q.id%3;
+    const mobName={prism:'碎镜眷属',forge:'炉灰行者',garden:'黑荆幼体'}[kind];
+    return [0,1,2].map(wave=>{
+      const final=wave===2,layout=layouts[kind][final?2:(wave+local)%3],flip=local===1;
+      const enemies=layout.mobs.map(([x,y],i)=>({x:flip?500-x:x,y,r:30+(i%2)*3,hp:Math.round((1000+progress*110)*(1+wave*.16)),art:'deep-one',sprite:kind==='prism'?'mirrorling':'minion',name:mobName,cooldown:2+i%2,counter:2+i%2,damage:Math.round(260+progress*20+wave*20)}));
+      if(final)enemies.unshift({x:250,y:165+(kind==='forge'?15:0),r:kind==='garden'?66:62,hp:Math.round(11600+progress*900),art:kind,sprite:kind,bossKind:kind,name:{prism:'镜渊织母',forge:'熔星监工',garden:'黑山母树'}[kind],cooldown:2,counter:1,damage:Math.round(540+progress*35)});
+      else {enemies[0].name=`精英${mobName}`;enemies[0].hp=Math.round(enemies[0].hp*1.4);enemies[0].r=35;}
+      return {name:`${q.name} · ${final?'首领':`第 ${wave+1} 战`}`,place:chapter.en,subtitle:chapter.name,title:final?enemies[0].name:wave===0?'迷失的巡游者':'深渊结阵',objective:`调查${chapter.name}`,description:chapter.strategy,reward:100,biome:kind,pillars:layout.pillars.map(p=>({...p,x:flip?500-p.x:p.x})),enemies};
+    });
+  }
   class Campaign{
     constructor(storage,now=Date.now){this.storage=storage;this.now=now;this.saveError=false;let raw;try{raw=JSON.parse(storage?.getItem(KEY)||'null');}catch{}this.state=normalize(raw,this.now());this.tick();}
     save(){try{this.storage?.setItem(KEY,JSON.stringify(this.state));this.saveError=false;}catch{this.saveError=true;}return !this.saveError;}
@@ -44,10 +90,12 @@
     hero(key){const h=CATALOG.find(h=>h.key===key);return h?stats(h,this.state.owned[key]):null;}
     party(){return this.state.team.map(k=>this.hero(k));}
     power(){return this.party().reduce((n,h)=>n+h.attack,0);}
+    canSpendGems(cost){return UNLIMITED_GEMS||this.state.gems>=cost;}
+    spendGems(cost){if(!Number.isFinite(cost)||cost<0)throw new Error('无效的星晶消耗');if(!this.canSpendGems(cost))throw new Error('星晶不足');if(!UNLIMITED_GEMS)this.state.gems-=cost;}
     unlocked(id){return id===0||!!this.state.clears[id-1];}
     summon(count,rng=Math.random){
-      if(count!==1&&count!==10)throw new Error('请选择单次或十连召唤');const s=this.state,cost=count===10?2700:300;if(s.gems<cost)throw new Error('星晶不足，可通过调查、任务与每日补给获得');
-      const results=[];s.gems-=cost;
+      if(count!==1&&count!==10)throw new Error('请选择单次或十连召唤');const s=this.state,cost=count===10?2700:300;
+      const results=[];this.spendGems(cost);
       for(let i=0;i<count;i++){
         s.pity++;const roll=rng();let rarity=s.pity>=30?6:roll<.04?6:roll<.28?5:4;
         if(count===10&&i===9&&!results.some(h=>h.rarity>=5))rarity=Math.max(rarity,5);
@@ -77,7 +125,7 @@
     claim(id){const m=MISSIONS.find(m=>m.id===id),s=this.state;if(!m||s.claimed.includes(id)||!this.missionReady(m))throw new Error('任务奖励尚不可领取');s.claimed.push(id);s.gems+=m.gems;s.gold+=m.gold;this.save();return m;}
     dailyClaim(){const d=new Date(this.now()),today=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`,s=this.state;if(s.daily===today)throw new Error('今日补给已经领取');s.daily=today;s.gems+=300;s.exp+=30;s.stamina=Math.min(60,s.stamina+30);this.save();}
     dailyReady(){const d=new Date(this.now());return this.state.daily!==`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
-    buy(item){const s=this.state;if(item==='energy'){this.tick();if(s.stamina===60)throw new Error('体力已满');if(s.gems<50)throw new Error('星晶不足');s.gems-=50;s.stamina=Math.min(60,s.stamina+30);}else if(item==='exp'){if(s.gold<1000)throw new Error('金币不足');s.gold-=1000;s.exp+=30;}else if(item==='sigil'){if(s.gems<100)throw new Error('星晶不足');s.gems-=100;s.sigils+=3;}else throw new Error('未知商品');this.save();}
+    buy(item){const s=this.state;if(item==='energy'){this.tick();if(s.stamina===60)throw new Error('体力已满');this.spendGems(50);s.stamina=Math.min(60,s.stamina+30);}else if(item==='exp'){if(s.gold<1000)throw new Error('金币不足');s.gold-=1000;s.exp+=30;}else if(item==='sigil'){this.spendGems(100);s.sigils+=3;}else throw new Error('未知商品');this.save();}
   }
-  const api={portrait,Campaign,CATALOG,CHAPTERS,QUESTS,MISSIONS,KEY,fresh,normalize,stats,waves};if(typeof module!=='undefined'&&module.exports)module.exports=api;else Object.assign(root,{AbyssProgress:api});
+  const api={portrait,Campaign,CATALOG,CHAPTERS,QUESTS,MISSIONS,KEY,UNLIMITED_GEMS,fresh,normalize,stats,waves};if(typeof module!=='undefined'&&module.exports)module.exports=api;else Object.assign(root,{AbyssProgress:api});
 })(typeof window!=='undefined'?window:globalThis);

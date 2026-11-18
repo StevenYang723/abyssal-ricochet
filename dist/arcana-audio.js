@@ -9,6 +9,8 @@ const ArcanaAudio=window.ArcanaAudio={
     seraph:[330,'sine',1900,'choir'],corvus:[65,'sine',480,'mist'],
     nyra:[110,'sine',1300,'wave'],orion:[185,'triangle',3100,'blade'],
     mira:[660,'sine',2200,'clock'],ren:[145,'triangle',2800,'blade'],
+    vesper:[392,'sine',2400,'bell'],bram:[82,'triangle',2000,'fall'],iris:[295,'sine',2700,'blade'],galen:[523,'sine',3000,'clock'],lyra:[220,'sine',1200,'choir'],morrow:[49,'sine',500,'soul'],thalia:[110,'triangle',1100,'mist'],sable:[330,'sine',2000,'bell'],
+    prismCross:[260,'sine',2600,'bell'],prismRay:[196,'triangle',3200,'blade'],prismArmor:[660,'sine',2100,'clock'],forgeRing:[55,'triangle',900,'wave'],forgeFalls:[65,'sine',1800,'fall'],forgeSteam:[82,'sine',1400,'mist'],gardenRoots:[73,'triangle',1200,'wave'],gardenPoison:[60,'sine',650,'mist'],gardenSanctum:[147,'sine',950,'choir'],
     gaze:[65,'sine',1100,'soul'],spores:[55,'sine',500,'mist'],fear:[42,'sine',750,'soul'],
     cross:[220,'sine',2400,'bell'],guard:[165,'triangle',1700,'bell'],bells:[110,'sine',1900,'bell'],
     tentacles:[48,'sine',750,'wave'],tide:[60,'sine',900,'wave'],eclipse:[38,'sine',600,'choir']

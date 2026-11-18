@@ -2,10 +2,10 @@
 /* Presentation-only renderer: fixed-step combat rules remain in engine.js. */
 const BattleFX={
   hitStop:0,slow:0,flash:0,trauma:0,impacts:[],shards:[],deaths:[],afterimages:[],jolts:new Map(),supportTimer:null,
-  atlas:new Image(),boss:new Image(),minion:new Image(),watcher:new Image(),warden:new Image(),masks:new Map(),audioNoise:null,
+  atlas:new Image(),boss:new Image(),minion:new Image(),watcher:new Image(),warden:new Image(),prism:new Image(),forge:new Image(),garden:new Image(),mirrorling:new Image(),masks:new Map(),audioNoise:null,
   init(){
-    this.boss.src='assets/boss-v2.png';this.minion.src='assets/deep-one-v2.png';this.watcher.src='assets/watcher-v3.png';this.warden.src='assets/warden-v3.png';
-    for(const [key,img]of [['boss',this.boss],['minion',this.minion],['watcher',this.watcher],['warden',this.warden]])img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const x=c.getContext('2d');x.drawImage(img,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#fff7d2';x.fillRect(0,0,c.width,c.height);this.masks.set(key,c);};
+    this.boss.src='assets/boss-v2.png';this.minion.src='assets/deep-one-v2.png';this.watcher.src='assets/watcher-v3.png';this.warden.src='assets/warden-v3.png';this.prism.src='assets/prism-v6.png';this.forge.src='assets/forge-v6.png';this.garden.src='assets/garden-v6.png';this.mirrorling.src='assets/mirrorling-v6.png';
+    for(const [key,img]of [['boss',this.boss],['minion',this.minion],['watcher',this.watcher],['warden',this.warden],['prism',this.prism],['forge',this.forge],['garden',this.garden],['mirrorling',this.mirrorling]])img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const x=c.getContext('2d');x.drawImage(img,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#fff7d2';x.fillRect(0,0,c.width,c.height);this.masks.set(key,c);};
   },
   physicsTime(dt){if(this.hitStop>0){this.hitStop=Math.max(0,this.hitStop-dt);return 0;}if(this.slow>0){this.slow-=dt;return dt*.4;}return dt;},
   reset(){if(window.AbilityFX)AbilityFX.reset();this.hitStop=0;this.slow=0;this.flash=0;this.trauma=0;this.impacts=[];this.shards=[];this.deaths=[];this.afterimages=[];this.jolts.clear();clearTimeout(this.supportTimer);$('supportCall').classList.remove('visible');$('supportCall').textContent='';$('skillCutin').classList.remove('play');},
@@ -36,13 +36,13 @@ const BattleFX={
     if(e.type==='ultimate'){this.hitStop=reduced?0:.2;this.slow=reduced?0:.3;this.flash=reduced?0:.06;this.trauma=5;const c=$('skillCutin');c.style.setProperty('--portrait-image',`url("${AbyssProgress.portrait(game.current)}")`);c.querySelector('.cutin-portrait').style.setProperty('--portrait-image',`url("${AbyssProgress.portrait(game.current)}")`);c.querySelector('strong').textContent=game.current.ultimate||'古印解放';c.querySelector('small').textContent=game.current.name+' · PERSONAL ARCANA';c.querySelector('span').textContent=game.current.awake>0?game.current.formTitle:game.current.combatRole||'秘术解放';c.style.setProperty('--skill-color',game.current.color);this.punch(c,'play');}
     if(e.type==='enemyAttack'){this.trauma=12;this.punch($('damageVignette'),'flash');this.shatter(game.current.x,game.current.y,'#ef9071',20);this.impactAudio(1.2);}
   },
-  heroPortrait(id,x,y,size){const im=images[portraitKey(game.heroes[id])];if(im.complete&&im.naturalWidth){const w=im.naturalWidth,h=im.naturalHeight;ctx.drawImage(im,w*.1,h*.01,w*.8,h*.8,x,y,size,size);}},
+  heroPortrait(id,x,y,size){const im=images[portraitKey(game.heroes[id])];if(im?.complete&&im.naturalWidth){const w=im.naturalWidth,h=im.naturalHeight;ctx.drawImage(im,w*.1,h*.01,w*.8,h*.8,x,y,size,size);}},
   monster(e,t,death=0){
     const mini=e.art==='deep-one',key=e.sprite||(mini?'minion':e.art==='watcher'?'watcher':'boss'),im=this[key],size=e.r*(mini?3.15:3.55);const j=this.jolts.get(e.id),jolt=j||{x:0,y:0,flash:0};const breath=reduced?0:Math.sin(t*1.65+e.id)*.016,offset=reduced?0:Math.sin(t*1.35+e.id)*3;
     ctx.save();ctx.translate(e.x+jolt.x,e.y+jolt.y+offset);ctx.rotate(reduced?0:Math.sin(t*.8+e.id)*.018);ctx.scale(1+breath+death*.15,1-breath+death*.15);
     if(e.art==='cthulhu')ctx.filter='hue-rotate(15deg) saturate(1.15)';
     if(im.complete&&im.naturalWidth){ctx.drawImage(im,-size/2,-size/2,size,size);ctx.filter='none';if(jolt.flash>0||death){const mask=this.masks.get(key);if(mask){ctx.globalAlpha=Math.min(.3,jolt.flash*1.65+death*.2);ctx.drawImage(mask,-size/2,-size/2,size,size);}}}
-    else{const old=images[e.art];if(old.complete&&old.naturalWidth)ctx.drawImage(old,-size/2,-size/2,size,size);}
+    else{const old=images[e.art];if(old?.complete&&old.naturalWidth)ctx.drawImage(old,-size/2,-size/2,size,size);}
     ctx.restore();
   }
 };
