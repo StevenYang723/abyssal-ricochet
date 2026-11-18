@@ -17,12 +17,19 @@ const SpatialFX=window.SpatialFX={
     if(!g)return;ctx.save();this.clip();ctx.globalAlpha*=alpha;ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineWidth=1;
     const center=g.center||{x:250,y:300},radius=g.radius||80,segments=g.segments||[];
     if(['disk','well','relay'].includes(g.shape)){circle(center.x,center.y,radius,c,outline?c:undefined,1.2);}
-    if(g.shape==='fan'&&g.points?.length>2){ctx.beginPath();g.points.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();ctx.fill();if(outline)ctx.stroke();}
+    if(['frame','sector'].includes(g.shape)||(g.shape==='fan'&&g.points?.length>2)){ctx.beginPath();g.points.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();ctx.fill();if(outline)ctx.stroke();}
     if(['lines','fan','tether','trail'].includes(g.shape)&&!(g.shape==='fan'&&g.points?.length>2)){
       ctx.lineCap='round';
       for(const [a,b]of segments){line(a.x,a.y,b.x,b.y,c,(g.width||8)*2);if(outline){ctx.globalAlpha/=2;line(a.x,a.y,b.x,b.y,'#f5eacb',1);ctx.globalAlpha*=2;}}
     }
     if(g.shape==='cone'){const angle=g.angle||0,spread=g.spread||.65;ctx.beginPath();ctx.moveTo(center.x,center.y);ctx.arc(center.x,center.y,radius,angle-spread,angle+spread);ctx.closePath();ctx.fill();if(outline)ctx.stroke();}
+    if(g.shape==='buoys') for(const q of g.points) circle(q.x,q.y,12,c,outline?c:undefined,1);
+    if(g.shape==='refuges'){
+      ctx.beginPath();ctx.rect(12,80,476,455);
+      for(const q of g.zones){ctx.moveTo(q.x+q.r,q.y);ctx.arc(q.x,q.y,q.r,0,2*Math.PI,true);}
+      ctx.fill('evenodd');
+      for(const q of g.zones) circle(q.x,q.y,q.r,null,'#c0f0c9',2);
+    }
     if(g.shape==='annulus'){ctx.beginPath();ctx.arc(center.x,center.y,g.outer||radius,0,Math.PI*2);ctx.arc(center.x,center.y,g.innerRadius||radius*.5,0,Math.PI*2,true);ctx.fill('evenodd');if(outline)ctx.stroke();}
     if(g.shape==='circles')for(const q of g.zones||g.circles||[])circle(q.x,q.y,q.r||q.radius,c,outline?c:undefined,1);
     if(g.shape==='outside'){const q=g.safe||{...center,r:radius};ctx.beginPath();ctx.rect(12,80,476,455);ctx.arc(q.x,q.y,q.r,0,Math.PI*2,true);ctx.fill('evenodd');circle(q.x,q.y,q.r,null,'#d2ecc1',1.3);}
@@ -110,9 +117,74 @@ const SpatialFX=window.SpatialFX={
     }
     ctx.restore();
   },
+  wake(g,p,c){
+    for(const [from,to] of g.segments){
+      const dx=to.x-from.x,dy=to.y-from.y,length=Math.hypot(dx,dy),angle=Math.atan2(dy,dx);
+      ctx.save();ctx.translate(from.x,from.y);ctx.rotate(angle);
+      for(const side of [-1,1]){
+        ctx.beginPath();
+        for(let x=0;x<=length;x+=12){
+          const y=side*(g.width*.65+Math.sin(x*.055-p*7)*3);
+          if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+        ctx.strokeStyle=side>0?c:'#d8e3ce';ctx.lineWidth=side>0?2.4:1.3;ctx.stroke();
+      }
+      for(let x=(p*74)%74;x<length;x+=74) AbilityFX.sprite('tide',x,0,87,g.width*2.1,0,.65);
+      ctx.restore();
+    }
+  },
+  bellRing(g,p,c,warning){
+    const o=g.center,r=warning?g.outer:g.innerRadius+(g.outer-g.innerRadius)*AbilityFX.ease(p);
+    ctx.save();
+    if(warning) ctx.setLineDash([5,6]);
+    circle(o.x,o.y,r,null,c,warning?1.3:3.3);
+    circle(o.x,o.y,Math.max(1,r-5),null,'#f5e6b8',1);
+    if(!warning){
+      for(let i=0;i<10;i++){
+        const a=i*Math.PI/5;
+        this.sprite('star',o.x+r*Math.cos(a),o.y+r*Math.sin(a),21,14,a,.74);
+      }
+      AbilityFX.sprite('bell',o.x,o.y,61,74,Math.sin(p*6)*.12,.8);
+    }
+    ctx.restore();
+  },
+  negative(g,p,warning){
+    const pts=g.points;
+    ctx.save();
+    if(warning) ctx.setLineDash([7,4]);
+    ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));
+    ctx.closePath();ctx.fillStyle=warning?'#9e6d9f24':'#e6d6e854';ctx.fill();
+    ctx.strokeStyle=warning?'#bba1bc':'#f2dae2';ctx.lineWidth=warning?1.8:3;ctx.stroke();
+    for(const q of pts) this.sprite('shard',q.x,q.y,23,24,.78,.76);
+    const [a,b,c,d]=pts;
+    const u=warning?p:1-p;
+    line(a.x+(b.x-a.x)*u,a.y+(b.y-a.y)*u,d.x+(c.x-d.x)*u,d.y+(c.y-d.y)*u,'#e4cadf',2);
+    ctx.restore();
+  },
+  buoy(q,t){
+    ctx.save();ctx.translate(q.x,q.y);ctx.rotate(reduced?0:Math.sin(t*3)*.1);
+    AbilityFX.glow(0,-5,26,'#a7e0b5',.9);
+    circle(0,3,10,'#8b483b','#ead5ae',1.4);line(-8,3,8,3,'#e6d0aa',3);
+    line(0,-3,0,-12,'#d0b27d',2);circle(0,-12,3.5,'#d9f5c4','#8db697',1);
+    ctx.restore();
+  },
+  activeFields(t){
+    if(game.mode!=='moving')return;
+    ctx.save();this.clip();
+    for(const effect of game.spatial){
+      if(effect.type==='buoys') for(const q of effect.points) this.buoy(q,t);
+      if(effect.type!=='imprint'||effect.remaining===0) continue;
+      const progress=reduced?.5:effect.elapsed/effect.period,color=AbyssKit.SKILLS[effect.key].color;
+      this.geometry(effect.geometry,color,.08);
+      if(effect.key==='ada') this.negative(effect.geometry,progress,true);
+      else this.bellRing(effect.geometry,progress,color,true);
+    }
+    ctx.restore();
+  },
   drawSkill(f,t){
     let g=f.geometry;
     if(!g) return false;
+    if(f.warning && (f.key==='ada'||f.key==='oren')) return true;
     if(g.shape==='tether' && g.anchorIds){
       if(g.turn!==game.turn || game.mode!=='moving' || g.actorId!==game.active) return true;
       g=game.tetherGeometry(g.anchorIds,g.width);
@@ -124,6 +196,16 @@ const SpatialFX=window.SpatialFX={
     // The softly lit footprint uses the exact hit shape and stays below the material.
     if(k.motif!=='rail' && k.motif!=='fan') this.geometry(g,c,.08,false);
     switch(k.motif){
+      case'wake':this.wake(g,p,c);this.impact(f.targets,c,p);break;
+      case'chime':this.bellRing(g,p,c,f.warning);if(!f.warning)this.impact(f.targets,c,p);break;
+      case'negative':this.negative(g,p,f.warning);if(!f.warning)this.impact(f.targets,c,p);break;
+      case'buoy':{
+        if(f.collected){
+          AbilityFX.ward(o.x,o.y,21+31*p,c,.8);
+          this.sprite('bloom',o.x,o.y,78,78,p*.16,.75);
+        }else for(const q of g.points) AbilityFX.glow(q.x,q.y,37,c,.55);
+        break;
+      }
       case'rail':{
         for(const [from,to] of g.segments) this.silverShot(from,to,p);
         for(const hit of f.targets) this.silverImpact(hit,p);
@@ -208,14 +290,49 @@ const SpatialFX=window.SpatialFX={
     if(!p.geometry)return false;
     this.geometry(p.geometry,p.color,alpha,true);
     const g=p.geometry;
+    if(g.shape==='refuges') for(const q of g.zones){
+      AbilityFX.ward(q.x,q.y,q.r,'#a8dbab',.55);
+      ctx.save();ctx.font='11px serif';ctx.fillStyle='#d8ead1';ctx.textAlign='center';ctx.fillText('避潮灯',q.x,q.y+4);ctx.restore();
+    }
     if(g.shape==='outside'){const q=g.safe||p.safe||{...g.center,r:g.radius};ctx.save();ctx.fillStyle='#dcebc0';ctx.font='11px serif';ctx.textAlign='center';ctx.fillText('安全区',q.x,q.y+4);ctx.restore();}
+    if(g.shape==='buoys') for(const q of g.points) circle(q.x,q.y,12,c,outline?c:undefined,1);
+    if(g.shape==='refuges'){
+      ctx.beginPath();ctx.rect(12,80,476,455);
+      for(const q of g.zones){ctx.moveTo(q.x+q.r,q.y);ctx.arc(q.x,q.y,q.r,0,2*Math.PI,true);}
+      ctx.fill('evenodd');
+      for(const q of g.zones) circle(q.x,q.y,q.r,null,'#c0f0c9',2);
+    }
     if(g.shape==='annulus'){ctx.save();ctx.fillStyle='#e9d8bd';ctx.font='10px serif';ctx.textAlign='center';ctx.fillText('内圈 / 外圈安全',g.center.x,g.center.y+4);ctx.restore();}
     return true;
   },
   drawBoss(f,t){
     const g=f.plan.geometry;if(!g)return false;const p=f.plan,c=p.color,age=reduced?.55:f.age/f.duration,o=g.center||f.origin;
     ctx.save();this.clip();ctx.globalAlpha*=AbilityFX.envelope(f.age/f.duration);this.geometry(g,c,.12,false);
-    if(p.id==='prismCross'||p.id==='prismRay'){
+    if(p.id==='whaleWake'){
+      this.wake(g,age,c);
+    }else if(p.id==='whaleJaws'||p.id==='priorShards'){
+      for(const q of g.zones){
+        const bone=p.id==='whaleJaws',r=q.r;
+        for(let i=0;i<(bone?5:3);i++){
+          const angle=i*2.4,offset=r*.44;
+          const x=q.x+Math.cos(angle)*offset,y=q.y+Math.sin(angle)*offset;
+          this.sprite(bone?'shard':'molten',x,y-(1-AbilityFX.ease(age*3))*64,bone?17:33,bone?57:45,angle,.95);
+        }
+        AbilityFX.shock(q.x,q.y,age,c,r/90);
+      }
+    }else if(p.id==='whaleRefuge'){
+      for(const q of g.zones){
+        this.buoy(q,t);AbilityFX.ward(q.x,q.y,q.r,c,.95);
+        AbilityFX.sprite('tide',q.x,q.y,q.r*2.5,q.r*2.5,-age*.3,.55);
+      }
+    }else if(p.id==='priorSwing'){
+      const angle=g.angle+(reduced?0:(age*2-1)*g.spread);
+      const tip={x:o.x+Math.cos(angle)*390,y:o.y+Math.sin(angle)*390};
+      AbilityFX.ribbon(o,tip,c,age,5);
+      AbilityFX.sprite('bell',tip.x,tip.y,86,100,angle-Math.PI/2,.95);
+    }else if(p.id==='priorEcho'){
+      this.bellRing(g,age,c,false);
+    }else if(p.id==='prismCross'||p.id==='prismRay'){
       for(const [a,b]of g.segments||[])this.beam(a,b,c,g.width||22,age,'prism');
       this.sprite('mirror',f.origin.x,f.origin.y,180,220,-age*.1,.95,'source-over');
       this.sprite('prismRing',f.origin.x,f.origin.y,260,260,age*.3,.7);

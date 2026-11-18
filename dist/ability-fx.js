@@ -111,12 +111,16 @@ const AbilityFX=window.AbilityFX={
   drawUnder(t){
     this.drawBudget=reduced?65:160;
     if(!game.tactical)return;if(reduced)t=0;
-    if(window.SpatialFX)SpatialFX.preview();
+    if(window.SpatialFX){SpatialFX.preview();SpatialFX.activeFields(t);}
     const cinematic=this.effects.reduce((n,f)=>Math.max(n,(f.ultimate||f.tag==='boss')?this.envelope(f.age/f.duration):0),0);
     if(cinematic){ctx.fillStyle='rgba(2,6,12,'+(cinematic*.24)+')';ctx.fillRect(0,70,500,490);}
     for(const hazard of game.hazards){
       this.plan(hazard,.12);
-      if(hazard.zones)for(const z of hazard.zones)this.sprite(hazard.id==='bells'?'clock':'venom',z.x,z.y,z.r*2.3,z.r*1.8,Math.sin(t*.3)*.1,.28);
+      if(hazard.zones)for(const z of hazard.zones){
+        if(hazard.id==='whaleJaws'){
+          SpatialFX.sprite('shard',z.x,z.y,z.r*1.4,z.r*1.5,.38,.47);
+        }else this.sprite(hazard.id==='bells'?'clock':'venom',z.x,z.y,z.r*2.3,z.r*1.8,Math.sin(t*.3)*.1,.28);
+      }
       if(hazard.id==='tide')for(const y of [100,510])this.sprite('tide',250,y,520,140,t*.05,.3);
     }
     const boss=game.enemies.find(e=>e.hp>0&&e.plan);

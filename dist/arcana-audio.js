@@ -3,6 +3,9 @@
 const ArcanaAudio=window.ArcanaAudio={
   noise:null,impulse:null,last:new Map(),
   profiles:{
+    maren:[125,'sine',1700,'wave'],oren:[196,'sine',2800,'bell'],ada:[295,'triangle',2850,'clock'],siv:[330,'sine',1250,'choir'],
+    whaleWake:[76,'sine',1800,'wave'],whaleJaws:[85,'triangle',1400,'fall'],whaleRefuge:[65,'sine',800,'choir'],
+    priorSwing:[123,'triangle',2400,'blade'],priorEcho:[146,'sine',3000,'bell'],priorShards:[98,'triangle',2200,'fall'],
     evelyn:[196,'sine',900,'choir'],noah:[95,'triangle',3400,'shot'],
     lucia:[440,'sine',1600,'bell'],silas:[98,'sine',650,'soul'],
     aster:[75,'sine',2400,'fall'],rook:[125,'triangle',2900,'shot'],

@@ -22,6 +22,12 @@
     thalia:{support:'荆棘随行',ultimate:'荒园·血蔷薇径',form:'黑山的花冠祭司',role:'路径 / 陷阱',color:'#b7c18b',motif:'thorns',text:'本次弹射经过的路径长出荆棘，沿轨迹周期性伤害，每个敌人最多受击 6 次。',ultText:'本次转为贯通，留下更宽的血蔷薇轨迹，每个敌人最多受击 8 次。'},
     sable:{support:'无面传令',ultimate:'秘宴·群星应答',form:'千面之夜的司仪',role:'接力 / 援护',color:'#dec48e',motif:'relay',text:'唤起自身半径 150 内队友的援护；同一角色每次弹射仅触发一次，接力不会循环。',ultText:'立即唤起另外三位队友的援护，可组合光束、引力井、弦线与荆棘。'}
   };
+  Object.assign(SKILLS,{
+    maren:{support:'双舷破浪',ultimate:'海图·纵贯四潮',form:'雾海提督',role:'双轨 / 侧击',color:'#88cdc5',motif:'wake',text:'沿触发者前进方向，在左右各 60 距离送出一道潮线。两道潮线之间留有空隙。',ultText:'沿弹射轴线向前后展开四条平行潮道。穿过多条潮道的敌人只受一次伤害。'},
+    oren:{support:'空心钟鸣',ultimate:'悼歌·三声晚钟',form:'最后的报钟人',role:'音环 / 间距',color:'#dcb879',motif:'chime',text:'敲响空心音环，伤害距自身 78 至 166 范围的敌人。贴身的敌人可避开。',ultText:'从起手处由近及远依次敲响三道音环。找准距离，大型敌人可以被相邻音环分别命中。'},
+    ada:{support:'滞光底片',ultimate:'暗房·双重曝光',form:'镜后的见证者',role:'定点 / 延时',color:'#cba9ce',motif:'negative',text:'沿来球方向在前方留下底片框。半秒后显影，只伤害显影时仍在框内的敌人。',ultText:'沿弹射方向留下近、远两张底片，依次显影。两框交叠处可以受到两次伤害。'},
+    siv:{support:'航道浮灯',ultimate:'返航·三盏引渡灯',form:'长夜的引渡人',role:'拾取 / 救援',color:'#acd7b9',motif:'buoy',text:'在前方航道放下浮灯。本次弹射碰到它时恢复 420×倍率生命，并获得 180×倍率护盾。',ultText:'沿弹射方向依次投下三盏浮灯。每拾取一盏恢复 360×倍率生命，获得 220×倍率护盾，并解除队伍中毒。'}
+  });
   const BOSSES={
     watcher:{name:'凝视者',phase:'瞳孔裂开 · 凝视范围扩大',moves:[{id:'gaze',name:'断魂凝视',hint:'避开锁定的直线光束',shape:'lane',color:'#b2df81'},{id:'spores',name:'孢子孵化',hint:'离开圆形孢子区；可用净化驱散毒池',shape:'circles',color:'#85bf67'},{id:'fear',name:'无声尖啸',hint:'损失理智；灯火和汲取可帮助恢复',shape:'fear',color:'#b894df'}]},
     warden:{name:'圣堂守门人',phase:'钟楼崩裂 · 刑钟与十字扩张',moves:[{id:'cross',name:'十字钟鸣',hint:'停在十字光带外侧',shape:'cross',color:'#d8ba77'},{id:'guard',name:'圣堂铁壁',hint:'获得护甲；破甲剑技和毒伤可穿透',shape:'guard',color:'#a5c9db'},{id:'bells',name:'坠落刑钟',hint:'离开落点；残留碎石会减慢弹射',shape:'circles',color:'#d8b083'}]},
@@ -30,6 +36,16 @@
     forge:{name:'熔星监工',phase:'熔炉失控 · 热浪与蒸汽扩张',moves:[{id:'forgeRing',name:'熔炉环震',hint:'站在内圈或最外侧，躲开发亮的环形热浪',shape:'annulus',color:'#f1af71'},{id:'forgeFalls',name:'熔星坠铸',hint:'离开标记落点；熔火会残留两回合',shape:'circles',color:'#e99266'},{id:'forgeSteam',name:'高压蒸汽',hint:'避开两条竖向蒸汽带，中央通道安全',shape:'lines',color:'#e5c89d'}]},
     garden:{name:'黑山母树',phase:'万根苏生 · 荆棘侵蚀',moves:[{id:'gardenRoots',name:'荆根缚途',hint:'避开从母树伸出的三条荆根线',shape:'lines',color:'#c4b887'},{id:'gardenPoison',name:'腐花毒域',hint:'离开两片腐花圆域；净化可驱散残毒',shape:'circles',color:'#9fc67b'},{id:'gardenSanctum',name:'黑山祷告',hint:'进入明亮的安全圆，圆外将被荆潮吞没',shape:'outside',color:'#caacd2'}]}
   };
+  BOSSES.whale={name:'拾骨鲸',phase:'鲸骨开潮 · 潮沟变宽，避潮灯范围收窄',moves:[
+    {id:'whaleWake',name:'双舷鲸汐',hint:'两道斜潮从上方掠过，在中间航道或两翼停留。',shape:'lines',color:'#7dc3b6'},
+    {id:'whaleJaws',name:'浮骨鲸落',hint:'三片搁浅的鲸骨落在标记圆内，并留下两回合碎骨。',shape:'circles',color:'#ddd1ae'},
+    {id:'whaleRefuge',name:'深水鲸歌',hint:'让调查员停进任意一座避潮灯的绿色圆内。',shape:'refuges',color:'#8ebda9'}
+  ]};
+  BOSSES.prior={name:'盲钟司祭',phase:'裂钟复鸣 · 扫击扇面张开，回声环变宽',moves:[
+    {id:'priorSwing',name:'钟舌摆斩',hint:'钟摆会锁定扇面。弹到侧面，或绕到司祭身后。',shape:'sector',color:'#d9ad78'},
+    {id:'priorEcho',name:'失声回廊',hint:'避开回声环，可以贴近钟心或退到外圈。',shape:'annulus',color:'#d5ba86'},
+    {id:'priorShards',name:'裂钟雨',hint:'碎钟锁定两名队友的位置。每有一人在落点内，队伍额外失去 8 点秘术能量。',shape:'circles',color:'#c9a2a8'}
+  ]};
   const pos=o=>({x:o.x,y:o.y,r:o.r||0});
   const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy;const u=l?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/l)):0;return Math.hypot(p.x-a.x-u*dx,p.y-a.y-u*dy);}
@@ -38,14 +54,14 @@
   function heading(vector){const length=Math.hypot(vector?.vx??vector?.x??0,vector?.vy??vector?.y??0);return length>.001?{x:(vector.vx??vector.x)/length,y:(vector.vy??vector.y)/length}:{x:0,y:-1};}
   function ray(origin,dir,length){return [point(origin),{x:origin.x+dir.x*length,y:origin.y+dir.y*length}];}
   function radial(origin,count,length,angle=0){return Array.from({length:count},(_,i)=>ray(origin,{x:Math.cos(angle+i*Math.PI*2/count),y:Math.sin(angle+i*Math.PI*2/count)},length));}
-  function reflectedRay(origin,direction,length=1300,bounces=3){
-    let p={x:Math.max(ARENA.left,Math.min(ARENA.right,origin.x)),y:Math.max(ARENA.top,Math.min(ARENA.bottom,origin.y))},d=heading(direction),left=length;const segments=[];
+  function reflectedRay(origin,direction,length=1300,bounces=3,bounds=ARENA){
+    let p={x:Math.max(bounds.left,Math.min(bounds.right,origin.x)),y:Math.max(bounds.top,Math.min(bounds.bottom,origin.y))},d=heading(direction),left=length;const segments=[];
     for(let i=0;i<=bounces&&left>.01;i++){
-      let tx=d.x>1e-8?(ARENA.right-p.x)/d.x:d.x< -1e-8?(ARENA.left-p.x)/d.x:Infinity;
-      let ty=d.y>1e-8?(ARENA.bottom-p.y)/d.y:d.y< -1e-8?(ARENA.top-p.y)/d.y:Infinity;
+      let tx=d.x>1e-8?(bounds.right-p.x)/d.x:d.x< -1e-8?(bounds.left-p.x)/d.x:Infinity;
+      let ty=d.y>1e-8?(bounds.bottom-p.y)/d.y:d.y< -1e-8?(bounds.top-p.y)/d.y:Infinity;
       // Reflect immediately when a cast begins on a boundary, without consuming a bounce.
-      if(tx<1e-7){d.x*=-1;tx=d.x>0?(ARENA.right-p.x)/d.x:(ARENA.left-p.x)/d.x;}
-      if(ty<1e-7){d.y*=-1;ty=d.y>0?(ARENA.bottom-p.y)/d.y:(ARENA.top-p.y)/d.y;}
+      if(tx<1e-7){d.x*=-1;tx=d.x>0?(bounds.right-p.x)/d.x:(bounds.left-p.x)/d.x;}
+      if(ty<1e-7){d.y*=-1;ty=d.y>0?(bounds.bottom-p.y)/d.y:(bounds.top-p.y)/d.y;}
       const step=Math.min(left,tx,ty),end={x:p.x+d.x*step,y:p.y+d.y*step};segments.push([point(p),end]);left-=step;
       if(left<.01)break;
       if(Math.abs(step-tx)<1e-6)d.x*=-1;if(Math.abs(step-ty)<1e-6)d.y*=-1;p=end;
@@ -57,6 +73,8 @@
     if((a.y>body.y)!==(b.y>body.y)&&body.x<(b.x-a.x)*(body.y-a.y)/(b.y-a.y)+a.x)inside=!inside;
   }return inside;}
   function inGeometry(body,g){if(!g)return false;const r=body.r||0;
+    if(g.shape==='frame'||g.shape==='sector') return polygonHit(body,g.points);
+    if(g.shape==='refuges') return !g.zones.some(zone=>distance(body,zone)+r<=zone.r);
     if(['disk','well','relay'].includes(g.shape))return distance(body,g.center)<=g.radius+r;
     if(g.shape==='annulus'){const d=distance(body,g.center);return d+r>=g.innerRadius&&d-r<=g.radius;}
     if(g.shape==='outside')return distance(body,g.center)+r>g.radius;
@@ -64,7 +82,29 @@
     if(g.shape==='fan'&&g.points?.length>=3)return polygonHit(body,g.points);
     return (g.segments||[]).some(l=>segmentDistance(body,l[0],l[1])<= (g.width||0)+r);
   }
+  function oriented(origin,d,forward,side){
+    return {x:origin.x+d.x*forward-d.y*side,y:origin.y+d.y*forward+d.x*side};
+  }
+  function wakeGeometry(hero,d,ultimate=false){
+    const offsets=ultimate?[-108,-42,42,108]:[-60,60];
+    return {shape:'lines',center:point(hero),width:ultimate?21:15,
+      segments:offsets.map(side=>[oriented(hero,d,ultimate?-700:0,side),oriented(hero,d,700,side)])};
+  }
+  function filmGeometry(hero,d,range,length,width){
+    const center=oriented(hero,d,range,0);
+    return {shape:'frame',center,points:[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>oriented(center,d,x*length/2,y*width/2))};
+  }
+  function buoys(hero,d,distances){
+    const radius=hero.r||22;
+    const bounds={left:ARENA.left+radius,right:ARENA.right-radius,top:ARENA.top+radius,bottom:ARENA.bottom-radius};
+    return {shape:'buoys',center:point(hero),points:distances.map(distance=>reflectedRay(hero,d,distance,4,bounds).at(-1)[1])};
+  }
+  function soundRing(hero,inner,outer){return {shape:'annulus',center:point(hero),innerRadius:inner,outer,radius:outer};}
   function supportGeometry(hero,vector,heroes=[],actor=vector){const key=hero.key||hero.art,center=point(hero),d=heading(vector),angle=Math.atan2(d.y,d.x);
+    if(key==='maren') return wakeGeometry(hero,d);
+    if(key==='oren') return soundRing(hero,78,166);
+    if(key==='ada') return filmGeometry(hero,d,130,150,110);
+    if(key==='siv') return buoys(hero,d,[108]);
     if(key==='vesper')return {shape:'lines',center,width:17,segments:[[{x:ARENA.left,y:hero.y},{x:ARENA.right,y:hero.y}],[{x:hero.x,y:ARENA.top},{x:hero.x,y:ARENA.bottom}]]};
     if(['bram','nyra','corvus','morrow','sable'].includes(key))return {shape:key==='morrow'?'well':key==='sable'?'relay':'disk',center,radius:{bram:140,nyra:160,corvus:175,morrow:155,sable:150}[key],points:key==='sable'?heroes.filter(h=>h.id!==hero.id&&distance(h,hero)<=150).map(point):[]};
     if(key==='noah')return {shape:'lines',center,width:20,segments:[ray(hero,d,850)]};
@@ -75,7 +115,7 @@
     if(key==='thalia')return {shape:'trail',center,width:28,points:actor?[point(actor)]:[],segments:[]};
     return null;
   }
-  function inPlan(h,p){if(['lane','cross','lines'].includes(p.shape))return p.lines.some(l=>segmentDistance(h,l[0],l[1])<(p.width||30)+(h.r||0));if(p.shape==='annulus')return inGeometry(h,p.geometry);if(p.shape==='circles')return p.zones.some(z=>distance(h,z)<z.r+(h.r||0));if(p.shape==='rows')return p.rows.some(y=>Math.abs(h.y-y)<p.width+(h.r||0));if(p.shape==='edge')return h.x<34+p.width||h.x>466-p.width||h.y<102+p.width||h.y>513-p.width;if(p.shape==='outside')return distance(h,p.safe)>p.safe.r-(h.r||0);return false;}
+  function inPlan(h,p){if(p.shape==='refuges'||p.shape==='sector')return inGeometry(h,p.geometry);if(['lane','cross','lines'].includes(p.shape))return p.lines.some(l=>segmentDistance(h,l[0],l[1])<(p.width||30)+(h.r||0));if(p.shape==='annulus')return inGeometry(h,p.geometry);if(p.shape==='circles')return p.zones.some(z=>distance(h,z)<z.r+(h.r||0));if(p.shape==='rows')return p.rows.some(y=>Math.abs(h.y-y)<p.width+(h.r||0));if(p.shape==='edge')return h.x<34+p.width||h.x>466-p.width||h.y<102+p.width||h.y>513-p.width;if(p.shape==='outside')return distance(h,p.safe)>p.safe.r-(h.r||0);return false;}
   function exposureAt(enemy,turn){
     let mark=enemy.expose;
     while(mark && mark.until<turn) mark=mark.next;
@@ -126,6 +166,10 @@
       const scale=hero.supportScale||1,key=hero.key||hero.art,weak=[...alive].sort((a,b)=>a.hp-b.hp)[0],strong=[...alive].sort((a,b)=>b.hp-a.hp)[0],near=[...alive].sort((a,b)=>distance(a,hero)-distance(b,hero));
       let targets=[],geometry=this.supportPreview(hero);const hit=(e,n,kind='support')=>this.damage(e,n*scale,kind);
       switch(key){
+        case'maren':targets=this.hitGeometry(geometry,260*scale);break;
+        case'oren':targets=this.hitGeometry(geometry,295*scale);break;
+        case'ada':this.queueImprint(hero,geometry,.5,355,false);return;
+        case'siv':this.placeBuoys(hero,geometry,false);return;
         case'evelyn':targets=[weak];markEnemy(weak,this.turn,1.25,this.turn+2);hit(weak,155);break;
         case'noah':targets=this.hitGeometry(geometry,230*scale);break;
         case'lucia':targets=this.heroes;this.healing(500*scale,hero);this.sanity=Math.min(100,this.sanity+5);this.protect(220*scale,hero);this.partyPoison=null;break;
@@ -162,6 +206,23 @@
     },
     tacticalUltimate(){const h=this.current,key=h.key||h.art,s=h.supportScale||1,alive=this.enemies.filter(e=>e.hp>0);this.shotKit={key,mult:2.2,wallLeft:0,followLeft:0,pierce:false,drag:.55};
       switch(key){
+        case'maren':{
+          const g=wakeGeometry(h,heading(h),true);
+          this.skillFx(h,true,this.hitGeometry(g,565*s),{geometry:g});return;
+        }
+        case'oren':{
+          for(const [index,inner] of [35,112,189].entries()){
+            this.queueImprint(h,soundRing(h,inner,inner+79),.15+index*.32,330,true);
+          }
+          return;
+        }
+        case'ada':{
+          const d=heading(h);
+          this.queueImprint(h,filmGeometry(h,d,95,184,180),.35,395,true);
+          this.queueImprint(h,filmGeometry(h,d,215,204,128),.78,465,true);
+          return;
+        }
+        case'siv':this.placeBuoys(h,buoys(h,heading(h),[82,170,268]),true);return;
         case'evelyn':for(const e of alive){markEnemy(e,this.turn,1.4,this.turn+3);for(let i=0;i<3;i++)this.damage(e,95*s,'ritual');}break;
         case'noah':{
           const salvo=this.addSpatial(h,'volley',{remaining:2,period:.3,power:130,ultimate:true});
@@ -193,6 +254,28 @@
       }
       this.skillFx(h,true,['lucia','seraph'].includes(key)?this.heroes:alive);
     },
+    queueImprint(hero,geometry,delay,power,ultimate){
+      this.addSpatial(hero,'imprint',{geometry,power,period:delay,remaining:1,ultimate});
+      this.skillFx(hero,ultimate,[],{geometry,warning:true,duration:delay,tick:false});
+    },
+    develop(effect){
+      const targets=this.hitGeometry(effect.geometry,effect.power*effect.scale);
+      this.skillFx(this.heroes[effect.owner],effect.ultimate,targets,{geometry:effect.geometry,tick:true,duration:.57});
+    },
+    placeBuoys(hero,geometry,ultimate){
+      this.addSpatial(hero,'buoys',{points:geometry.points.map(point),ultimate});
+      this.skillFx(hero,ultimate,[],{geometry,duration:.5});
+    },
+    collectBuoys(effect,previous,actor){
+      effect.points=effect.points.filter(buoy=>{
+        if(segmentDistance(buoy,previous,actor)>actor.r+12) return true;
+        this.healing((effect.ultimate?360:420)*effect.scale,actor);
+        this.protect((effect.ultimate?220:180)*effect.scale,actor);
+        if(effect.ultimate) this.partyPoison=null;
+        this.skillFx(this.heroes[effect.owner],effect.ultimate,[],{tick:true,collected:true,geometry:{shape:'buoys',center:point(buoy),points:[buoy]},duration:.6});
+        return false;
+      });
+    },
     fireVolley(salvo){
       const targets=this.enemies.filter(e=>e.hp>0);
       if(!targets.length) return;
@@ -202,6 +285,7 @@
     advanceSpatial(dt,previous=point(this.current)){
       if(!this.tactical||!this.spatial.length)return;const actor=this.current;
       for(const effect of this.spatial){const hero=this.heroes[effect.owner];if(!hero)continue;
+        if(effect.type==='buoys'){this.collectBuoys(effect,previous,actor);continue;}
         if(effect.type==='mines'){
           effect.travel+=distance(previous,actor);
           if(effect.remaining>0&&effect.travel>=76){effect.travel%=76;effect.remaining--;const mine={...point(actor),age:0};effect.mines.push(mine);this.skillFx(hero,true,[],{tick:true,warning:true,geometry:{shape:'disk',center:point(mine),radius:effect.radius}});}
@@ -213,6 +297,7 @@
           const last=effect.points[effect.points.length-1];if(distance(last,actor)>8&&effect.points.length<260)effect.points.push(point(actor));
         }
         effect.elapsed+=dt;if(effect.elapsed<effect.period)continue;effect.elapsed%=effect.period;effect.remaining--;
+        if(effect.type==='imprint'){this.develop(effect);continue;}
         if(effect.type==='volley'){this.fireVolley(effect);continue;}
         let geometry,targets;
         if(effect.type==='tether')geometry=this.tetherGeometry(effect.anchors,effect.width);
@@ -228,6 +313,7 @@
       }
     },
     finishSpatial(){
+      for(const effect of this.spatial) if(effect.type==='imprint' && effect.remaining>0) this.develop(effect);
       for(const salvo of this.spatial.filter(effect=>effect.type==='volley')){
         while(salvo.remaining>0){salvo.remaining--;this.fireVolley(salvo);}
       }
@@ -264,6 +350,19 @@
       if(p.shape==='rows'){p.rows=[265,435];p.width=phase===2?42:28;}
       if(p.shape==='edge')p.width=phase===2?62:43;
       if(p.shape==='outside')p.safe={x:250,y:405,r:phase===2?95:122};
+      if(p.id==='whaleWake'){
+        p.width=phase===2?41:29;
+        p.lines=[[-10,178],[237,425]].map(([top,bottom])=>[{x:top,y:80},{x:bottom,y:535}]);
+      }
+      if(p.id==='whaleJaws') p.zones=[[132,299],[337,245],[324,437]].map(([x,y])=>({x,y,r:phase===2?76:58}));
+      if(p.id==='whaleRefuge') p.geometry={shape:'refuges',zones:[{x:130,y:340},{x:368,y:405}].map(q=>({...q,r:phase===2?76:94}))};
+      if(p.id==='priorSwing'){
+        const target=this.current,angle=Math.atan2(target.y-e.y,target.x-e.x),spread=phase===2?.64:.43;
+        const points=[point(e)];
+        for(let i=0;i<=20;i++) points.push({x:e.x+Math.cos(angle-spread+2*spread*i/20)*520,y:e.y+Math.sin(angle-spread+2*spread*i/20)*520});
+        p.geometry={shape:'sector',center:point(e),angle,spread,points};
+      }
+      if(p.id==='priorEcho') p.geometry=soundRing({x:250,y:330},phase===2?85:108,phase===2?204:180);
       if(p.id==='prismCross'){p.width=phase===2?27:18;p.lines=[[{x:35,y:85},{x:465,y:515}],[{x:465,y:85},{x:35,y:515}]];}
       if(p.id==='prismRay'){p.width=phase===2?29:20;const target=this.heroes[(this.active+1)%this.heroes.length];p.lines=reflectedRay(e,{x:target.x-e.x,y:target.y-e.y},1300,3);}
       if(p.id==='prismArmor')p.geometry={shape:'disk',center:point(e),radius:e.r+18};
@@ -282,8 +381,10 @@
     executeBoss(e){const p=e.plan,book=BOSSES[e.bossKind];if(!p)return 0;const hit=this.heroes.filter(h=>inPlan(h,p)),scale=e.phase===2?1.25:1;let damage=0;
       if(p.id==='guard'||p.id==='prismArmor'){e.armor=Math.round(e.maxHp*(e.phase===2?.27:.22));}
       else if(p.id==='fear'){this.sanity=Math.max(0,this.sanity-(e.phase===2?16:12));}
-      else{damage=this.hurtParty(hit.length?e.damage*(.5+hit.length*.45)*scale:0);if(['spores','gardenPoison'].includes(p.id)&&hit.length)this.partyPoison={ticks:2,power:Math.round(e.damage*.18)};if(['eclipse','gardenSanctum'].includes(p.id)&&hit.length)this.sanity=Math.max(0,this.sanity-8);if(['spores','bells','tide','forgeFalls','gardenPoison'].includes(p.id))this.hazards.push({...JSON.parse(JSON.stringify(p)),ticks:2,power:Math.round(e.damage*.15)});}
-      this.emit('bossCast',{plan:JSON.parse(JSON.stringify(p)),origin:pos(e),targets:hit.map(pos),damage,blocked:this.shield>0,name:book.name});e.moveIndex++;e.counter=e.cooldown;this.planBoss(e);return damage;
+      else{damage=this.hurtParty(hit.length?e.damage*(.5+hit.length*.45)*scale:0);if(['spores','gardenPoison'].includes(p.id)&&hit.length)this.partyPoison={ticks:2,power:Math.round(e.damage*.18)};if(['eclipse','gardenSanctum'].includes(p.id)&&hit.length)this.sanity=Math.max(0,this.sanity-8);if(['spores','bells','tide','forgeFalls','gardenPoison','whaleJaws'].includes(p.id))this.hazards.push({...JSON.parse(JSON.stringify(p)),ticks:2,power:Math.round(e.damage*.15)});}
+      const energyLost=p.id==='priorShards'?Math.min(this.energy,8*hit.length):0;
+      this.energy-=energyLost;
+      this.emit('bossCast',{energyLost,plan:JSON.parse(JSON.stringify(p)),origin:pos(e),targets:hit.map(pos),damage,blocked:this.shield>0,name:book.name});e.moveIndex++;e.counter=e.cooldown;this.planBoss(e);return damage;
     },
     checkBossPhase(e){if(!e.bossKind||e.phase===2||e.hp<=0||e.hp>e.maxHp*.5)return;e.phase=2;e.counter=Math.min(e.counter,1);this.planBoss(e);this.emit('bossPhase',{boss:e.id,name:BOSSES[e.bossKind].phase,...pos(e)});}
   };

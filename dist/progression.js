@@ -20,10 +20,21 @@
     ['thalia','塔莉娅','黑荆园丁',4,'森','#99c17f',163,1,'荆棘行迹','每一寸被吞没的道路，都会在她身后重新生长。'],
     ['sable','塞布尔','终夜指挥家',6,'辉','#e2c58a',172,1,'共鸣接力','终夜的乐章没有独奏者，只有仍然相互回应的人。']
   ];
-  const CATALOG=[...base.HEROES.map((h,i)=>({...h,key:h.art,rarity:i===0?5:4,element:['森','潮','辉','幽'][i],supportKind:i})),...extra.map(([key,name,role,rarity,element,color,attack,supportKind,skill,lore])=>({key,art:key,name,role,rarity,element,color,attack,supportKind,skill,lore,type:['aster','nyra','ren','iris','lyra','morrow','thalia'].includes(key)?'贯通':'反射',description:['追击生命最低的敌人。','对全体敌人发起远程攻击。','恢复生命与理智，并攻击最近的敌人。','集中攻击生命最高的敌人。'][supportKind]}))];
+  extra.push(
+    ['maren','玛琳','潮路领航员',5,'潮','#88cdc5',155,1,'双舷破浪','她记得每一条航线，连被海图抹去的那一条也记得。'],
+    ['oren','欧伦','沉钟校音师',4,'辉','#dcb879',148,0,'空心钟鸣','他能听出一座钟究竟是在报时，还是在求救。'],
+    ['ada','艾达','底片显影师',6,'幽','#cba9ce',169,1,'滞光底片','暗房里多出了一张她尚未拍摄的照片。'],
+    ['siv','西芙','风暴救护员',5,'潮','#acd7b9',146,2,'航道浮灯','雾里只要还有一盏绿灯，就还有人等你靠岸。']
+  );
+  const CATALOG=[...base.HEROES.map((h,i)=>({...h,key:h.art,rarity:i===0?5:4,element:['森','潮','辉','幽'][i],supportKind:i})),...extra.map(([key,name,role,rarity,element,color,attack,supportKind,skill,lore])=>({key,art:key,name,role,rarity,element,color,attack,supportKind,skill,lore,type:['aster','nyra','ren','iris','lyra','morrow','thalia','maren','siv'].includes(key)?'贯通':'反射',description:['追击生命最低的敌人。','对全体敌人发起远程攻击。','恢复生命与理智，并攻击最近的敌人。','集中攻击生命最高的敌人。'][supportKind]}))];
   for(const h of CATALOG){const k=kit.SKILLS[h.key];h.skill=k.support;h.ultimate=k.ultimate;h.description=k.text;h.ultimateDescription=k.ultText;h.combatRole=k.role;h.formTitle=k.form;h.color=k.color;}
   const newKeys=new Set(['vesper','bram','iris','galen','lyra','morrow','thalia','sable']);
-  const portrait=h=>`assets/${h.key||h.art}${newKeys.has(h.key||h.art)?(h.awake>0?'-awakened-v6':'-v6'):(h.awake>0?'-awakened-v5':'-v2')}.jpg`;
+  const harborHeroes=new Set(['maren','oren','ada','siv']);
+  function portrait(h){
+    const key=h.key||h.art;
+    const version=harborHeroes.has(key)?7:newKeys.has(key)?6:h.awake>0?5:2;
+    return `assets/${key}${h.awake>0?'-awakened':''}-v${version}.jpg`;
+  }
   const UNLIMITED_GEMS=true;
   const CHAPTERS=[
     {name:'雾锁印斯茅斯',en:'INNSMOUTH',story:'一封潮湿的信，把你带到这座没有钟声的港口。',color:'#7fc7b0',bossKey:'watcher',bossArt:'assets/watcher-v3.png',strategy:'借助同伴援护突破雾港，离开凝视光束与孢子毒池。'},
@@ -33,9 +44,17 @@
     {name:'熔星铸炉',en:'THE STARFORGE',story:'矿工从地底挖出一颗仍在跳动的星，铸炉从此不再熄灭。',color:'#dfa26e',bossKey:'forge',bossArt:'assets/forge-v6.png',strategy:'绕过炉心进入侧翼。圆形爆破能清理聚集的铸炉眷属，热浪中注意内外安全区。'},
     {name:'黑山胎园',en:'THE BLACKWOOD CRADLE',story:'失踪者的低语藏在树根深处，黑山的母亲正在等待下一次春天。',color:'#9dbc82',bossKey:'garden',bossArt:'assets/garden-v6.png',strategy:'用引力井聚拢小怪，再以荆棘轨迹、毒雾或连携引爆清场；避免停留在根系和毒域中。'}
   ];
-  const names=['潮湿的来信','没有归途的街','雾港的凝视者','深海阶梯','无声的祷告','圣堂守门人','异星回廊','群星之门','旧日支配者','镜中的陌生人','折返的月光','镜渊织母','落星矿道','永夜炉心','熔星监工','不眠的苗圃','荆棘摇篮','黑山母树'];
+  CHAPTERS.push(
+    {name:'漂骨湾',en:'THE OSSUARY SOUND',story:'退潮时，海面浮出一排白肋。第二天，它们离港口更近了。',color:'#91c9bd',bossKey:'whale',bossArt:'assets/whale-v7.png',strategy:'穿过两股鲸汐之间的航道。鲸歌响起前，靠近两座避潮灯中的任意一座。'},
+    {name:'哑钟修院',en:'THE SILENT BELFRY',story:'修院封了七十年。今夜，全镇的钟摆都转向了它。',color:'#d2ab81',bossKey:'prior',bossArt:'assets/prior-v7.png',strategy:'绕到钟摆侧面躲扇斩。回声环内外皆可停留，裂钟落地时会夺走圈内队友的秘术能量。'}
+  );
+  const names=['潮湿的来信','没有归途的街','雾港的凝视者','深海阶梯','无声的祷告','圣堂守门人','异星回廊','群星之门','旧日支配者','镜中的陌生人','折返的月光','镜渊织母','落星矿道','永夜炉心','熔星监工','不眠的苗圃','荆棘摇篮','黑山母树','浮肋浅滩','无人灯桩','拾骨鲸','逆摆阶梯','悼钟回廊','盲钟司祭'];
   const QUESTS=names.map((name,i)=>({id:i,name,chapter:Math.floor(i/3),number:`${Math.floor(i/3)+1}-${i%3+1}`,cost:6+i*2,level:1+i*4,power:700+i*200,gold:700+i*220,exp:18+i*6,gems:150+i*25,sigils:1+Math.floor(i/3),boss:i%3===2}));
   const MISSIONS=[{id:'first',name:'第一次调查',desc:'完成任意关卡 1 次',stat:'wins',target:1,gems:300,gold:1000},{id:'summoner',name:'回应群星的呼唤',desc:'累计召唤 10 次',stat:'pulls',target:10,gems:600,gold:2000},{id:'training',name:'黑暗中的灯火',desc:'累计提升角色等级 10 次',stat:'levels',target:10,gems:300,gold:2500},{id:'chapter1',name:'雾港调查报告',desc:'通关主线 1-3',quest:2,gems:500,gold:3000},{id:'chapter2',name:'沉没的秘密',desc:'通关主线 2-3',quest:5,gems:700,gold:5000},{id:'chapter3',name:'让群星归于沉寂',desc:'通关主线 3-3',quest:8,gems:1200,gold:10000},{id:'chapter4',name:'镜中的月亮',desc:'通关主线 4-3',quest:11,gems:1400,gold:12000},{id:'chapter5',name:'熄灭亡星',desc:'通关主线 5-3',quest:14,gems:1600,gold:15000},{id:'chapter6',name:'黎明不会缺席',desc:'通关主线 6-3',quest:17,gems:2000,gold:18000}];
+  MISSIONS.push(
+    {id:'chapter7',name:'为归船留灯',desc:'通关主线 7-3',quest:20,gems:2100,gold:20000},
+    {id:'chapter8',name:'最后一响',desc:'通关主线 8-3',quest:23,gems:2400,gold:22000}
+  );
   const KEY='abyssal-campaign-v3';
   const integer=(v,min,max,fallback=min)=>Number.isFinite(v)?Math.max(min,Math.min(max,Math.floor(v))):fallback;
   const fresh=(now=Date.now())=>({version:3,gems:3000,gold:18000,exp:160,sigils:6,stamina:60,staminaAt:now,rankExp:0,owned:Object.fromEntries(CATALOG.slice(0,4).map(h=>[h.key,{level:1,awake:0,shards:0,luck:1}])),team:CATALOG.slice(0,4).map(h=>h.key),clears:{},stats:{wins:0,pulls:0,levels:0},claimed:[],pity:0,daily:'',activeRun:null,lastResults:[]});
@@ -70,15 +89,25 @@
       {mobs:[[140,275],[360,275],[95,375],[405,375]],pillars:[{x:205,y:350,r:18},{x:295,y:350,r:18}]}
     ]
   };
+  layouts.whale=[
+    {mobs:[[90,200],[300,195],[415,260],[175,328],[330,370]],pillars:[{x:190,y:240,r:20},{x:400,y:365,r:17}]},
+    {mobs:[[90,238],[240,180],[395,218],[155,380],[340,320]],pillars:[{x:205,y:280,r:20}]},
+    {mobs:[[96,260],[405,298],[194,368],[340,380]],pillars:[{x:175,y:282,r:18},{x:320,y:278,r:18}]}
+  ];
+  layouts.prior=[
+    {mobs:[[90,195],[250,255],[409,195],[145,360],[355,360]],pillars:[{x:174,y:256,r:18},{x:328,y:256,r:18}]},
+    {mobs:[[120,180],[380,180],[115,315],[380,334],[250,365]],pillars:[{x:250,y:250,r:23}]},
+    {mobs:[[113,276],[381,263],[98,372],[392,385]],pillars:[{x:200,y:336,r:20},{x:300,y:336,r:20}]}
+  ];
   function waves(q){
     const c=q.chapter,scale=.62+q.id*.23;
     if(c<3)return [0,1,2].map(wave=>{const original=base.STAGES[c],modifier=scale*(.72+wave*.20);return {...original,name:`${q.name} · ${wave===2?'首领':`第 ${wave+1} 战`}`,title:wave===2?original.title:['巡游的深潜者','深渊的眷属'][wave],reward:100,enemies:original.enemies.map((e,i)=>({...e,sprite:i===0&&wave===2?['watcher','warden','boss'][c]:'minion',bossKind:i===0&&wave===2?CHAPTERS[c].bossKey:undefined,counter:i===0&&wave===2?1:e.cooldown,hp:Math.round(e.hp*modifier*(i===0&&wave===2?1.9:1)),damage:Math.round(e.damage*(.7+q.id*.13)),art:wave<2&&i===0?'deep-one':e.art,name:wave<2&&i===0?'精英深潜者':e.name,x:wave===1?500-e.x:e.x}))};});
     const chapter=CHAPTERS[c],kind=chapter.bossKey,progress=q.id-9,local=q.id%3;
-    const mobName={prism:'碎镜眷属',forge:'炉灰行者',garden:'黑荆幼体'}[kind];
+    const mobName={prism:'碎镜眷属',forge:'炉灰行者',garden:'黑荆幼体',whale:'沉船拾骨者',prior:'失声侍僧'}[kind];
     return [0,1,2].map(wave=>{
       const final=wave===2,layout=layouts[kind][final?2:(wave+local)%3],flip=local===1;
       const enemies=layout.mobs.map(([x,y],i)=>({x:flip?500-x:x,y,r:30+(i%2)*3,hp:Math.round((1000+progress*110)*(1+wave*.16)),art:'deep-one',sprite:kind==='prism'?'mirrorling':'minion',name:mobName,cooldown:2+i%2,counter:2+i%2,damage:Math.round(260+progress*20+wave*20)}));
-      if(final)enemies.unshift({x:250,y:165+(kind==='forge'?15:0),r:kind==='garden'?66:62,hp:Math.round(11600+progress*900),art:kind,sprite:kind,bossKind:kind,name:{prism:'镜渊织母',forge:'熔星监工',garden:'黑山母树'}[kind],cooldown:2,counter:1,damage:Math.round(540+progress*35)});
+      if(final)enemies.unshift({x:250,y:165+(kind==='forge'?15:0),r:kind==='garden'?66:62,hp:Math.round(11600+progress*900),art:kind,sprite:kind,bossKind:kind,name:kit.BOSSES[kind].name,cooldown:2,counter:1,damage:Math.round(540+progress*35)});
       else {enemies[0].name=`精英${mobName}`;enemies[0].hp=Math.round(enemies[0].hp*1.4);enemies[0].r=35;}
       return {name:`${q.name} · ${final?'首领':`第 ${wave+1} 战`}`,place:chapter.en,subtitle:chapter.name,title:final?enemies[0].name:wave===0?'迷失的巡游者':'深渊结阵',objective:`调查${chapter.name}`,description:chapter.strategy,reward:100,biome:kind,pillars:layout.pillars.map(p=>({...p,x:flip?500-p.x:p.x})),enemies};
     });
@@ -106,13 +135,31 @@
       }
       s.stats.pulls+=count;s.lastResults=results;this.save();return results;
     }
-    train(key,count=1){const s=this.state,o=s.owned[key];if(!o)throw new Error('尚未拥有这位调查员');if(count!==1&&count!==5)throw new Error('无效的强化次数');let levels=0,gold=0,exp=0;const max=20+o.awake*20;
-      for(let i=0;i<count&&o.level+i<max;i++){gold+=(o.level+i)*65;exp+=Math.ceil((o.level+i)*.8+2);levels++;}
-      if(!levels)throw new Error('已达等级上限，觉醒后可继续强化');if(s.gold<gold||s.exp<exp)throw new Error(`材料不足，需要 ${gold} 金币与 ${exp} 残响`);
-      s.gold-=gold;s.exp-=exp;o.level+=levels;s.stats.levels+=levels;this.save();return levels;
+    train(key,count=1){
+      const hero=this.state.owned[key];
+      if(!hero) throw new Error('尚未拥有这位调查员');
+      if(count!==1 && count!==5) throw new Error('无效的强化次数');
+      const levels=Math.min(count,20+hero.awake*20-hero.level);
+      if(levels<=0) throw new Error('已达等级上限，觉醒后可继续强化');
+      hero.level+=levels;this.state.stats.levels+=levels;this.save();return levels;
     }
-    awaken(key){const s=this.state,o=s.owned[key];if(!o)throw new Error('尚未拥有这位调查员');if(o.awake>=4)throw new Error('已完成全部觉醒');if(o.level<20+o.awake*20)throw new Error('达到当前等级上限后可觉醒');const cost=3*(o.awake+1),gold=2000*(o.awake+1);if(s.sigils<cost||s.gold<gold)throw new Error(`需要 ${cost} 古印与 ${gold} 金币`);s.sigils-=cost;s.gold-=gold;o.awake++;this.save();}
-    exchangeShards(key){const o=this.state.owned[key];if(!o||o.shards<20)throw new Error('需要 20 枚该角色魂片');o.shards-=20;this.state.exp+=30;this.save();}
+    awaken(key){
+      const hero=this.state.owned[key];
+      if(!hero) throw new Error('尚未拥有这位调查员');
+      if(hero.awake>=4) throw new Error('已完成全部觉醒');
+      if(hero.level<20+hero.awake*20) throw new Error('达到当前等级上限后可觉醒');
+      hero.awake++;this.save();
+    }
+    trainLuck(key){
+      const hero=this.state.owned[key];
+      if(!hero) throw new Error('尚未拥有这位调查员');
+      if(hero.luck>=99) throw new Error('幸运已满');
+      hero.luck=Math.min(99,hero.luck+5);this.save();
+    }
+    exchangeShards(key){
+      if(!this.state.owned[key]) throw new Error('尚未拥有这位调查员');
+      this.state.exp+=30;this.save();
+    }
     equip(key,slot){const s=this.state;if(!s.owned[key]||!Number.isInteger(slot)||slot<0||slot>3)throw new Error('无效的编队选择');const old=s.team.indexOf(key);if(old>=0)[s.team[old],s.team[slot]]=[s.team[slot],s.team[old]];else s.team[slot]=key;this.save();}
     begin(id){const q=QUESTS[id],s=this.state;this.tick();if(s.activeRun)throw new Error('请先完成或退出当前调查');if(!q||!this.unlocked(id))throw new Error('完成前一关后解锁');if(s.stamina<q.cost)throw new Error('体力不足，每 5 分钟恢复 1 点，也可领取补给或在商店补充');if(s.stamina===60)s.staminaAt=this.now();s.stamina-=q.cost;s.activeRun={quest:id,token:`${this.now()}-${Math.random().toString(36).slice(2)}`};this.save();return {tactical:true,stages:waves(q),party:this.party(),maxHp:this.party().reduce((n,h)=>n+h.hp,0)};}
     finish(won,details={}){const s=this.state,run=s.activeRun;if(!run)return null;s.activeRun=null;
@@ -125,7 +172,7 @@
     claim(id){const m=MISSIONS.find(m=>m.id===id),s=this.state;if(!m||s.claimed.includes(id)||!this.missionReady(m))throw new Error('任务奖励尚不可领取');s.claimed.push(id);s.gems+=m.gems;s.gold+=m.gold;this.save();return m;}
     dailyClaim(){const d=new Date(this.now()),today=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`,s=this.state;if(s.daily===today)throw new Error('今日补给已经领取');s.daily=today;s.gems+=300;s.exp+=30;s.stamina=Math.min(60,s.stamina+30);this.save();}
     dailyReady(){const d=new Date(this.now());return this.state.daily!==`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
-    buy(item){const s=this.state;if(item==='energy'){this.tick();if(s.stamina===60)throw new Error('体力已满');this.spendGems(50);s.stamina=Math.min(60,s.stamina+30);}else if(item==='exp'){if(s.gold<1000)throw new Error('金币不足');s.gold-=1000;s.exp+=30;}else if(item==='sigil'){this.spendGems(100);s.sigils+=3;}else throw new Error('未知商品');this.save();}
+    buy(item){const s=this.state;if(item==='energy'){this.tick();if(s.stamina===60)throw new Error('体力已满');this.spendGems(50);s.stamina=Math.min(60,s.stamina+30);}else if(item==='exp'){s.exp+=30;}else if(item==='sigil'){this.spendGems(100);s.sigils+=3;}else throw new Error('未知商品');this.save();}
   }
   const api={portrait,Campaign,CATALOG,CHAPTERS,QUESTS,MISSIONS,KEY,UNLIMITED_GEMS,fresh,normalize,stats,waves};if(typeof module!=='undefined'&&module.exports)module.exports=api;else Object.assign(root,{AbyssProgress:api});
 })(typeof window!=='undefined'?window:globalThis);

@@ -164,7 +164,59 @@ function bossPlan(kind,index,phase=1){const b=battle('vesper',[enemy(250,180,{bo
   check(inPlan({x:p.safe.x+p.safe.r-10,y:p.safe.y,r:22},p),'garden sanctuary hits body partially outside');
   check(bossPlan('garden',2,2).plan.safe.r<p.safe.r,'enrage reduces sanctuary radius');
 }
-for(const kind of ['prism','forge','garden']){
+{
+  const {engine:e}=use('maren',[enemy(365,250),enemy(365,190),enemy(365,310),enemy(150,190)]);
+  assert.deepEqual(e.enemies.map(v=>v.hp),[10000,9740,9740,10000],'both forward wakes hit while the middle and rear lanes stay clear');
+}
+{
+  const {engine:e}=use('oren',[enemy(265,250),enemy(360,250),enemy(445,250)]);
+  assert.deepEqual(e.enemies.map(v=>v.hp),[10000,9705,10000],'the bell has a safe central hole and a finite outer edge');
+  e.active=1;e.energy=100;e.armUltimate();e.launch(1,0);
+  const before=e.enemies.map(v=>v.hp);
+  e.advanceSpatial(.16);assert.equal(before[1]-e.enemies[1].hp,330);
+  assert.equal(before[2]-e.enemies[2].hp,0);
+  e.advanceSpatial(.32);e.advanceSpatial(.32);
+  assert.equal(before[2]-e.enemies[2].hp,660,'overlap at the body edge can catch two successive rings');
+}
+{
+  const {engine:e,hero,events}=battle('ada',[enemy(390,250),enemy(180,250)]);
+  e.launch(1,0);e.support(hero);
+  assert(events.find(event=>event.key==='ada' && event.warning).targets.length===0);
+  e.advanceSpatial(.49);
+  assert(e.enemies.every(target=>target.hp===10000));
+  e.enemies[0].y=365;e.enemies[1].x=350;
+  e.advanceSpatial(.02);e.finishSpatial();
+  assert.deepEqual(e.enemies.map(v=>v.hp),[10000,9645],'film uses the original frame and the enemies present at development, exactly once');
+}
+{
+  const {engine:e,hero}=battle('siv',[enemy(100,170)]);
+  e.launch(1,0);e.hp=e.maxHp-2000;e.support(hero);const hp=e.hp;
+  assert.equal(e.shield,0,'placing a buoy gives no instant shield');
+  const buoy=e.spatial.find(s=>s.type==='buoys').points[0];
+  const previous={x:buoy.x-55,y:buoy.y};Object.assign(e.current,{x:buoy.x+55,y:buoy.y});
+  e.advanceSpatial(.02,previous);e.advanceSpatial(.02,previous);
+  assert.equal(e.hp-hp,420);assert.equal(e.shield,180,'a swept pickup counts once');
+  e.finishSpatial();assert.equal(e.spatial.length,0);
+}
+{
+  const p=bossPlan('whale',2).plan;
+  for(const safe of p.geometry.zones) assert(!inPlan({...safe,r:22},p));
+  assert(inPlan({x:250,y:340,r:22},p),'the gap between refuges is dangerous');
+  assert(bossPlan('whale',2,2).plan.geometry.zones[0].r<p.geometry.zones[0].r);
+  const {boss,plan}=bossPlan('prior',0);
+  const a=plan.geometry.angle;
+  assert(inPlan({x:boss.x+100*Math.cos(a),y:boss.y+100*Math.sin(a),r:8},plan));
+  assert(!inPlan({x:boss.x-100*Math.cos(a),y:boss.y-100*Math.sin(a),r:8},plan),'behind the pendulum is safe');
+  const whale=bossPlan('whale',1);whale.engine.executeBoss(whale.boss);
+  assert.equal(whale.engine.hazards[0].ticks,2);
+  const prior=bossPlan('prior',2),g=prior.engine;
+  const victims=g.heroes.filter(h=>inPlan(h,prior.plan));
+  assert(victims.length>=2);g.energy=70;g.executeBoss(prior.boss);
+  assert.equal(g.energy,70-victims.length*8);
+  g.heroes.forEach(h=>Object.assign(h,{x:100,y:115}));
+  g.energy=0;g.executeBoss(prior.boss);assert.equal(g.energy,0);
+}
+for(const kind of ['prism','forge','garden','whale','prior']){
   const {engine:e,boss}=bossPlan(kind,0),seen=[];
   for(let i=0;i<3;i++){seen.push(boss.plan.id);e.executeBoss(boss);}
   check(new Set(seen).size===3&&boss.plan.id===seen[0],`${kind} cycles three distinct skills`);

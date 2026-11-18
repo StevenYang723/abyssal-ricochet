@@ -28,7 +28,7 @@ function event(e){
   if(e.type==='heal'){floaters.push({x:e.x,y:e.y-60,text:`+${e.amount}`,color:'#badfa8',life:1.2,max:1.2});}
   if(e.type==='wall'){burst(e.x,e.y,'#8ba894',4);tone(110,.035,'sine',.018);}
   if(e.type==='ultimate'){message(game.current.ultimate||'古印解放',1300);addLog(`秘术 · ${game.current.ultimate||'古印解放'}`);}
-  if(e.type==='bossCast'){bossMessageUntil=performance.now()+1700;message(e.plan.name+(e.damage?'':' · 成功规避 / 状态变化'),1600);addLog(`${e.name}使用「${e.plan.name}」${e.damage?'，受到 '+e.damage+' 伤害。':'。'}`);}
+  if(e.type==='bossCast'){bossMessageUntil=performance.now()+1700;message(e.plan.name+(e.energyLost?' · 秘术能量 −'+e.energyLost:e.damage?'':' · 成功规避 / 状态变化'),1600);addLog(`${e.name}使用「${e.plan.name}」${e.energyLost?'，秘术能量 −'+e.energyLost:''}${e.damage?'，受到 '+e.damage+' 伤害。':'。'}`);}
   if(e.type==='bossPhase'){bossMessageUntil=performance.now()+1800;message(e.name,1800);addLog(e.name);}
   if(e.type==='shieldBlock'||e.type==='armorBlock'){floaters.push({x:e.x,y:e.y-35,text:(e.type==='shieldBlock'?'护盾吸收 ':'护甲格挡 ')+e.amount,color:'#b6dce6',life:1,max:1});}
   if(e.type==='partyPoison')addLog('中毒侵蚀：使用灯火或净化技能解除。');
