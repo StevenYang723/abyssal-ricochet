@@ -22,9 +22,9 @@ const AbilityFX=window.AbilityFX={
   event(e){
     if(e.type==='stage'){this.reset();return;}
     if(e.type==='skillFx'){
-      if(e.tick&&['tether','well','trail'].includes(e.geometry?.shape))this.effects=this.effects.filter(f=>!(f.tag==='skill'&&f.key===e.key&&f.geometry?.shape===e.geometry.shape));
+      if(e.tick&&['tether','well','trail'].includes(e.geometry?.shape))this.effects=this.effects.filter(f=>!(f.tag==='skill'&&f.key===e.key&&f.geometry?.shape===e.geometry.shape && (e.geometry.shape!=='tether'||f.ultimate===e.ultimate)));
       this.add({...e,tag:'skill',duration:e.duration||(e.tick?(e.warning?.52:.32):e.ultimate?2.35:e.fall?1.5:1.3)});
-      if(window.ArcanaAudio&&!e.tick)ArcanaAudio.play(e.key,!!e.ultimate);
+      if(window.ArcanaAudio&&!e.tick)ArcanaAudio.play(e.key,!!e.ultimate && e.round===undefined,e.phase);
     }
     if(e.type==='bossCast'){
       this.add({...e,tag:'boss',duration:2.15});
@@ -126,12 +126,47 @@ const AbilityFX=window.AbilityFX={
       ctx.save();ctx.font='10px serif';ctx.textAlign='center';ctx.fillStyle='#bed7ef';ctx.fillText('陨星 · 下次弹射结束',d.x,d.y+d.r+13);ctx.restore();
     }
   },
+  weaponPhase(f){
+    const color=AbyssKit.SKILLS[f.key].color;
+    const age=f.age/f.duration,p=reduced?.45:age;
+    ctx.save();
+    SpatialFX.clip();
+    ctx.globalAlpha*=this.envelope(age);
+    if(f.phase==='prepare'){
+      if(game.turn===f.turn && game.active===f.actorId && game.mode==='moving'){
+        const caster=game.current;
+        if(f.key==='rook'){
+          for(let i=0;i<3;i++){
+            const angle=f.angle+(i-1)*.46+Math.PI,r=39-12*p;
+            this.sprite('rail',caster.x+Math.cos(angle)*r,caster.y+Math.sin(angle)*r,37,15,angle+Math.PI,.88);
+          }
+        }else if(f.key==='orion'){
+          this.ward(caster.x,caster.y,36+4*p,color,.9);
+          this.sprite('blade',caster.x,caster.y,67,67,f.angle+.7,.72);
+        }else{
+          this.sprite('slash',caster.x,caster.y,78,65,f.angle-p*.45,.84);
+        }
+      }
+    }else{
+      const at=f.origin;
+      if(f.key==='orion'){
+        const size=f.geometry.radius*2*this.ease(.3+p);
+        this.sprite('blade',at.x,at.y,size,size,f.angle+Math.PI/2,.95);
+        this.shock(at.x,at.y,p,color,1.2);
+      }else{
+        this.sprite('slash',at.x,at.y,108,76,f.angle+Math.PI*.25,.95);
+      }
+      for(const hit of f.targets) this.sparks(hit.x,hit.y,p,color,10,39,hit.x);
+    }
+    ctx.restore();
+  },
   drawSkill(f,t){
+    if(f.phase==='prepare'||f.phase==='contact'){this.weaponPhase(f);return;}
     if(window.SpatialFX&&SpatialFX.drawSkill(f,t))return;
     const k=AbyssKit.SKILLS[f.key],c=k.color,o=f.origin,p=reduced?.55:Math.min(1,f.age/f.duration),a=this.envelope(f.age/f.duration),u=f.ultimate?1.6:1;
     const targets=f.impact?[f.impact]:f.targets.length?f.targets:[o];
     ctx.save();ctx.globalAlpha*=a;
-    if(f.ultimate){this.sprite(k.motif==='clock'?'clock':'seal',o.x,o.y,190,110,-p*.25,.45);this.glow(o.x,o.y,100,c,.55);}
+    if(f.ultimate && k.motif!=='rail'){this.sprite(k.motif==='clock'?'clock':'seal',o.x,o.y,190,110,-p*.25,.45);this.glow(o.x,o.y,100,c,.55);}
     switch(k.motif){
       case'constellation':
         for(const q of targets){
@@ -140,20 +175,17 @@ const AbilityFX=window.AbilityFX={
           for(let i=0;i<(f.ultimate?5:3);i++){const ang=i*2.4+p*.65,rr=(38+Math.sin(p*3)*15)*u;const v={x:q.x+Math.cos(ang)*rr,y:q.y+Math.sin(ang)*rr};this.glow(v.x,v.y,12,c,.7);if(f.ultimate)this.ribbon(v,q,c,p,1.1);}
           this.sparks(q.x,q.y,p,c,13,70*u,q.x);this.shock(q.x,q.y,p,c,.65*u);
         }break;
-      case'rail':
-        targets.forEach((q,j)=>{
-          const shot=(p*3+j*.11)%1;
-          const origins=f.ultimate?[{x:12,y:q.y-55},{x:488,y:q.y+55}]:[o];
-          for(const from of origins){
-            const end=f.end||q,dx=end.x-from.x,dy=end.y-from.y,theta=Math.atan2(dy,dx),len=Math.hypot(dx,dy);
-            const reach=Math.min(1,shot*4),point={x:from.x+dx*reach,y:from.y+dy*reach};
-            this.ribbon(from,point,c,p,f.ultimate?3.8:2.5,0);
-            this.sprite('rail',(from.x+q.x)/2,(from.y+q.y)/2,Math.min(330,Math.hypot(q.x-from.x,q.y-from.y)*1.15),f.ultimate?85:58,theta,.55);
-            this.sprite('rail',point.x,point.y,130,55,theta,.95);
-            this.glow(from.x,from.y,40,c,.75);
-            if(shot>.2){this.sprite('blast',q.x,q.y,70,70,p,.4);this.sparks(q.x,q.y,shot,c,10,65,j);}
-          }
-        });break;
+      case'rail':{
+        const round=f.round,shot=p;
+        ctx.save();SpatialFX.clip();
+        for(const [index,q] of f.targets.entries()){
+          const left=(index+round)%2===0;
+          const muzzle={x:left?12:488,y:Math.max(80,Math.min(535,q.y+(left?-55:55)))};
+          SpatialFX.silverShot(muzzle,q,reduced?.35:shot);
+          if(shot>.35) SpatialFX.silverImpact(q,(shot-.35)/.65);
+        }
+        ctx.restore();break;
+      }
       case'lantern':{
         const center=f.ultimate?{x:250,y:405}:o;
         this.sprite('lantern',center.x,center.y-32,190*u,230*u,0,.9);
@@ -251,8 +283,9 @@ const AbilityFX=window.AbilityFX={
       for(const e of game.enemies){
         if(e.hp<=0)continue;
         if(e.armor>0)this.ward(e.x,e.y,e.r+14,'#b5cbd5',.48);
-        if(e.expose?.until>=game.turn)this.sprite('seal',e.x,e.y+e.r*.45,e.r*1.8,e.r*.8,t*.04,.3);
-        const marks=[e.poison?'毒':'',e.burn?'灼':'',e.expose?.until>=game.turn?'纹':''].filter(Boolean).join(' ');
+        const marked=AbyssKit.exposureAt(e,game.turn);
+        if(marked)this.sprite('seal',e.x,e.y+e.r*.45,e.r*1.8,e.r*.8,t*.04,.3);
+        const marks=[e.poison?'毒 '+e.poison.ticks:'',e.burn?'灼':'',marked?'星纹 +'+Math.round((marked.mult-1)*100)+'%':''].filter(Boolean).join(' · ');
         if(marks){ctx.save();ctx.font='10px serif';ctx.textAlign='center';ctx.fillStyle=e.poison?'#b0d98b':e.burn?'#efbc8c':'#d6d5a6';ctx.fillText(marks,e.x,e.y+e.r+30);ctx.restore();}
       }
     }

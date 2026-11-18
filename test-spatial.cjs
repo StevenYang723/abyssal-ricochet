@@ -125,6 +125,21 @@ for(const key of ['nyra','corvus','bram']){
     check(JSON.stringify(e.spatial).length>0,`${key} runtime is serializable`);
   }
 }
+// The moving Lyra touches Sable, who relays back to her during the same shot.
+{
+  const {engine:e,events,hero:sable}=battle('sable',[enemy(260,270),enemy(260,375)]);
+  Object.assign(e.current,{key:'lyra',x:120,y:260});
+  Object.assign(sable,{x:190,y:260});
+  e.launch(1,0);
+  for(let i=0;i<430 && e.mode==='moving';i++) e.update(1/120);
+  const casts=events.filter(event=>event.type==='skillFx' && event.key==='lyra');
+  const pulses=casts.filter(event=>event.tick);
+  check(casts.length===13 && pulses.length===12,'self-relay starts one tether with twelve pulses');
+  check(casts.every(({geometry:g})=>g.anchorIds[0]===sable.id && g.actorId===0),'Sable anchors the moving Lyra');
+  check(pulses.every(({geometry:g})=>Math.hypot(g.segments[0][0].x-g.segments[0][1].x,g.segments[0][0].y-g.segments[0][1].y)>0),'relay pulses span two positions');
+  check(pulses.some(p=>p.targets.some(hit=>hit.y===270)) && pulses.every(p=>p.targets.every(hit=>hit.y!==375)),'only the enemy crossed by the string takes pulse damage');
+}
+
 function bossPlan(kind,index,phase=1){const b=battle('vesper',[enemy(250,180,{bossKind:kind,r:60,hp:20000})]);const boss=b.engine.enemies[0];boss.moveIndex=index;boss.phase=phase;b.engine.planBoss(boss);return {...b,boss,plan:boss.plan};}
 {
   const {plan:p}=bossPlan('forge',0);

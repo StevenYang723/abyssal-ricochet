@@ -36,15 +36,15 @@
       this.emit('launch',{hero:this.active});return true;
     }
     damage(enemy,amount,kind='hit'){
-      if(enemy.hp<=0)return 0;let value=Math.round(amount*(enemy.expose&&enemy.expose.until>=this.turn?enemy.expose.mult:1));
+      if(enemy.hp<=0)return 0;let value=Math.round(amount*(Kit.exposureAt(enemy,this.turn)?.mult||1));
       if(enemy.armor>0&&!['poison','pierce'].includes(kind)){const blocked=Math.min(enemy.armor,value);enemy.armor-=blocked;value-=blocked;this.emit('armorBlock',{x:enemy.x,y:enemy.y,amount:blocked});}
       const actual=Math.min(enemy.hp,Math.max(0,value));enemy.hp-=actual;enemy.flash=.16;this.score+=actual;this.combo++;this.maxCombo=Math.max(this.combo,this.maxCombo);if(!this.powered)this.energy=clamp(this.energy+7,0,100);
       this.emit('hit',{x:enemy.x,y:enemy.y,amount:actual,kind,combo:this.combo,enemy:enemy.id});
       if(enemy.hp<=0){this.totalKills++;this.score+=80;this.emit('kill',{x:enemy.x,y:enemy.y,name:enemy.name});}else if(this.tactical)this.checkBossPhase(enemy);return actual;
     }
-    support(hero){
+    support(hero,relaySource){
       if(!(this.friends instanceof Set))this.friends=new Set();if(this.friends.has(hero.id))return;this.friends.add(hero.id);this.energy=clamp(this.energy+9,0,100);this.emit('support',{hero:hero.id,x:hero.x,y:hero.y});
-      if(this.tactical){this.tacticalSupport(hero);return;}
+      if(this.tactical){this.tacticalSupport(hero,relaySource);return;}
       const alive=this.enemies.filter(e=>e.hp>0);if(!alive.length)return;
       const scale=hero.supportScale||1,kind=hero.supportKind??hero.id;
       if(kind===0){const e=alive.sort((a,b)=>a.hp-b.hp)[0];this.emit('beam',{from:hero,to:e,color:hero.color});this.damage(e,180*scale,'support');}

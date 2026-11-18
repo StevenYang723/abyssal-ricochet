@@ -29,6 +29,77 @@ for(const key of Object.keys(BOSSES)){const {g,events}=battle('evelyn',key),boss
 const state=new Map(),c=new Campaign({getItem:k=>state.get(k),setItem:(k,v)=>state.set(k,v)});c.state.owned.evelyn.level=20;c.awaken('evelyn');const restored=new Campaign(c.storage);assert(portrait(restored.hero('evelyn')).includes('awakened-v5'));assert(portrait({...restored.hero('evelyn'),awake:0}).includes('-v2.jpg'));
 // Exercise actual gameplay events through every rendering branch. Reject invalid
 // coordinates before they can break a canvas frame on mobile.
+for(const key of ['rook','orion','ren']){
+  const {g,events}=battle(key);
+  Object.assign(g.current,{x:140,y:290});
+  Object.assign(g.enemies[0],{x:265,y:290,r:18});
+  g.enemies.slice(1).forEach((e,i)=>Object.assign(e,{x:340+i*60,y:450,r:12}));
+  g.energy=100;
+  g.armUltimate();
+  g.launch(key==='rook'?-1:1,0);
+  const ready=events.find(e=>e.type==='skillFx');
+  assert.equal(ready.phase,'prepare');
+  assert.deepEqual(ready.targets,[]);
+  assert(!events.some(e=>e.type==='hit'),key+' starts without enemy damage');
+  for(let i=0;i<70 && !events.some(e=>e.burst||e.follow);i++) g.update(1/120);
+  const impact=events.find(e=>e.burst||e.follow);
+  assert.equal(impact?.key,key,key+' produces an effect on a real collision');
+  assert.equal(impact.targets.length,1);
+  assert(events.slice(0,events.indexOf(impact)).some(e=>e.type==='hit'),'impact follows damage');
+  if(key==='rook') assert(events.some(e=>e.type==='wall' && e.x===impact.origin.x));
+  else assert.equal(impact.origin.x,g.enemies[0].x);
+}
+{
+  const {g}=battle('evelyn');
+  const enemy=g.enemies[0],start=g.turn;
+  g.tacticalSupport(g.current);
+  g.tacticalUltimate();
+  g.tacticalSupport(g.current);
+  assert.equal(g.damage(enemy,100),140);
+  g.turn=start+3;
+  g.tacticalSupport(g.current);
+  assert.equal(g.damage(enemy,100),140,'weak mark cannot shorten or extend strong mark');
+  g.turn++;
+  assert.equal(g.damage(enemy,100),125,'later ordinary mark survives for its own remaining duration');
+  g.turn+=2;
+  assert.equal(g.damage(enemy,100),100,'both marks expire');
+}
+{
+  const {g,events}=battle('noah');
+  g.enemies[0].hp=130;
+  g.energy=100;g.armUltimate();g.launch(1,0);
+  const rounds=()=>events.filter(e=>e.type==='skillFx' && e.key==='noah' && e.ultimate);
+  assert.deepEqual(rounds().map(e=>e.round),[0]);
+  assert.equal(g.enemies[1].hp,19870,'only the first round lands at launch');
+  g.advanceSpatial(.29);
+  assert.equal(rounds().length,1);
+  g.advanceSpatial(.02);
+  assert.deepEqual(rounds().map(e=>[e.round,e.targets.length]),[[0,3],[1,2]],'second round skips the defeated target');
+  g.advanceSpatial(.30);
+  g.finishSpatial();
+  assert.deepEqual(rounds().map(e=>e.round),[0,1,2]);
+  assert.equal(g.enemies[1].hp,19610,'the three salvos retain their total damage');
+}
+for(const weakFirst of [false,true]){
+  const {g}=battle('corvus'),enemy=g.enemies[0];
+  Object.assign(g.current,{x:enemy.x,y:enemy.y});
+  if(weakFirst) g.tacticalSupport(g.current);
+  g.tacticalUltimate();
+  g.resolveTurnEffects();
+  g.tacticalSupport(g.current);
+  g.tacticalSupport(g.current);
+  enemy.armor=1000;
+  const damage=[];
+  for(let i=0;i<7;i++){
+    const before=enemy.hp;
+    g.resolveTurnEffects();
+    damage.push(before-enemy.hp);
+  }
+  assert.deepEqual(damage,[110,110,110,65,65,65,0],'strong poison finishes first, equal doses refresh once');
+  assert.equal(enemy.poison,null);
+  assert.equal(enemy.armor,1000);
+}
+
 const vm=require('node:vm');
 const numeric=(...values)=>values.forEach(v=>{if(typeof v==='number')assert(Number.isFinite(v),'Finite drawing coordinate required');else if(Array.isArray(v))numeric(...v);});
 const canvasMethods=['save','restore','translate','rotate','beginPath','closePath','moveTo','lineTo','arc','ellipse','quadraticCurveTo','bezierCurveTo','fill','stroke','rect','clip','setLineDash','fillRect','strokeRect','fillText','scale','clearRect','strokeText','drawImage','setTransform'];
@@ -61,6 +132,45 @@ const trailEvent={type:'skillFx',key:'thalia',origin:{x:170,y:447},targets:[],ti
 renderer.reset();renderer.event(trailEvent);renderer.event(trailEvent);assert.equal(renderer.effects.length,1,'Moving geometry replaces its stale snapshot');
 renderer.drawBudget=160;spatialRenderer.drawSkill({...trailEvent,age:.12,duration:.32},0);assert(renderer.drawBudget>=120,'Long thorn trail preserves texture budget for other effects');
 const oldDrawImage=context.drawImage;let gravityRendered=false;context.drawImage=(texture,...args)=>{if(texture===spatialRenderer.textures[5])gravityRendered=true;oldDrawImage(texture,...args);};spatialRenderer.drawSkill({key:'morrow',origin:{x:250,y:300},targets:[],geometry:{shape:'well',center:{x:250,y:300},radius:155},age:.2,duration:.5},0);context.drawImage=oldDrawImage;assert(gravityRendered,'Gravity remains visible after a long thorn trail');
+// Observe the materials actually drawn, including the live string between damage pulses.
+{
+  const samples={};
+  for(const name of ['silverShot','crystalFlight','beam']){
+    const draw=spatialRenderer[name];
+    samples[name]=draw;
+    spatialRenderer[name]=function(...args){samples.calls.push(name);return draw.apply(this,args);};
+  }
+  for(const [key,material,supportCount,ultimateCount] of [
+    ['noah','silverShot',1,3],['iris','crystalFlight',5,12],['vesper','beam',2,8]
+  ]){
+    const {g,events}=battle(key);
+    sandbox.game=g;
+    g.tacticalSupport(g.current);
+    g.energy=100;g.armUltimate();g.launch(0,-1);
+    for(const ultimate of [false,true]){
+      samples.calls=[];
+      const fx=events.find(e=>e.type==='skillFx' && !!e.ultimate===ultimate);
+      renderer.drawBudget=160;
+      renderer.drawSkill({...fx,age:.24,duration:1},0);
+      assert.deepEqual(samples.calls,Array(ultimate?ultimateCount:supportCount).fill(material));
+    }
+  }
+  for(const name of ['silverShot','crystalFlight','beam']) spatialRenderer[name]=samples[name];
+  const {g,events}=battle('lyra');
+  sandbox.game=g;g.energy=100;g.armUltimate();g.launch(1,0);
+  const fx=events.find(e=>e.key==='lyra' && e.ultimate);
+  g.current.x+=64;
+  const ribbon=renderer.ribbon;
+  const ends=[];
+  renderer.ribbon=(from,to)=>ends.push(to);
+  spatialRenderer.drawSkill({...fx,duration:1,age:.12},0);
+  assert.equal(ends.length,9);
+  assert(ends.some(to=>to.x===g.current.x && to.y===g.current.y),'drawn string follows actor between pulses');
+  ends.length=0;g.finishShot();
+  spatialRenderer.drawSkill({...fx,duration:1,age:.18},0);
+  assert.equal(ends.length,0,'expired tether never attaches to the next player');
+  renderer.ribbon=ribbon;
+}
 assert.equal(renderer.textures.length,16,'All sixteen material textures are prepared');
 assert(fs.existsSync('dist/assets/arcana-vfx-v5.png'));assert.equal(sandbox.window.SpatialFX.textures.length,16);assert(fs.existsSync('dist/assets/spatial-vfx-v6.png'));
 for(const kind of ['prism','forge','garden','mirrorling'])assert(fs.existsSync('dist/assets/'+kind+'-v6.png'));

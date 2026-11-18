@@ -49,16 +49,100 @@ const SpatialFX=window.SpatialFX={
     AbilityFX.glow(a.x,a.y,width*2.5,c,.45);
   },
   impact(targets,c,p){for(const q of targets||[]){this.sprite('star',q.x,q.y,55+35*p,55+35*p,p,.7);AbilityFX.sparks(q.x,q.y,p,c,8,42,q.x);}},
+  silverShot(from,to,p){
+    const dx=to.x-from.x,dy=to.y-from.y,distance=Math.hypot(dx,dy);
+    if(distance<1) return;
+    const ux=dx/distance,uy=dy/distance;
+    const edgeX=ux>0?488:12,edgeY=uy>0?535:80;
+    const length=Math.min(distance,ux?(edgeX-from.x)/ux:Infinity,uy?(edgeY-from.y)/uy:Infinity);
+    if(length<1) return;
+    const angle=Math.atan2(dy,dx),head=length*Math.min(1,p*2.3),tail=Math.max(0,head-62);
+    ctx.save();
+    ctx.translate(from.x,from.y);
+    ctx.rotate(angle);
+    ctx.globalCompositeOperation='screen';
+    const wake=ctx.createLinearGradient(tail,0,Math.max(head,tail+.01),0);
+    wake.addColorStop(0,'#72858d00');wake.addColorStop(.65,'#a7bcc57a');wake.addColorStop(1,'#fff0ce');
+    line(0,1.4,head,1.4,'#bc8d5a80',1);
+    line(0,0,head,0,'#cfe4eeae',1.6);
+    line(tail,0,head,0,wake,4.4);
+    if(p<.48) AbilityFX.sprite('rail',head,0,54,17,0,.95);
+    if(p<.38){
+      AbilityFX.sprite('blast',9,0,49,20,0,.8*(1-p/.38));
+      AbilityFX.glow(0,0,26,'#dba46a',.75);
+    }
+    ctx.restore();
+  },
+  silverImpact(hit,p){
+    ctx.save();
+    ctx.translate(hit.x,hit.y);
+    ctx.rotate(-.22);
+    const radius=12+10*(1-AbilityFX.ease(p*2));
+    for(let i=0;i<4;i++){
+      ctx.rotate(Math.PI/2);
+      ctx.beginPath();ctx.arc(0,0,radius,-.48,.48);ctx.strokeStyle='#d9ae76';ctx.lineWidth=1.8;ctx.stroke();
+      line(radius-3,0,radius+4,0,'#eae5ce',1.4);
+    }
+    ctx.restore();
+    AbilityFX.sparks(hit.x,hit.y,p,'#e4cf9e',7,31,hit.x);
+  },
+  crystalFlight(from,to,p,index){
+    const dx=to.x-from.x,dy=to.y-from.y,angle=Math.atan2(dy,dx);
+    ctx.save();
+    ctx.translate(from.x,from.y);
+    ctx.rotate(angle);
+    const length=Math.hypot(dx,dy);
+    for(let rank=0;rank<2;rank++){
+      const fraction=(p*1.45+.07)-rank*.27-(index%2)*.045;
+      if(fraction<0||fraction>1) continue;
+      const head=length*fraction,body=rank?19:29;
+      ctx.save();
+      ctx.translate(head,0);
+      this.sprite('shard',-body*.5,0,body*2.2,body,0,.68);
+      // Two facets share a sharp silhouette even when the mobile canvas is scaled down.
+      ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(-body*.64,-5);ctx.lineTo(-body,0);ctx.closePath();
+      ctx.fillStyle='#b8e3d9';ctx.fill();
+      ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(-body,0);ctx.lineTo(-body*.48,5);ctx.closePath();
+      ctx.fillStyle=index%2?'#668eaa':'#568f90';ctx.fill();
+      line(-body*.64,-5,4,0,'#eef9e6',1.3);
+      line(-body*1.85,0,-body,0,'#9fcac877',1.4);
+      ctx.restore();
+    }
+    ctx.restore();
+  },
   drawSkill(f,t){
-    const g=f.geometry;if(!g)return false;const k=AbyssKit.SKILLS[f.key],c=k.color,o=g.center||f.origin,p=reduced?.55:Math.min(1,f.age/f.duration),a=AbilityFX.envelope(f.age/f.duration),r=g.radius||130,u=f.ultimate?1.35:1;
-    ctx.save();this.clip();ctx.globalAlpha*=a;
+    let g=f.geometry;
+    if(!g) return false;
+    if(g.shape==='tether' && g.anchorIds){
+      if(g.turn!==game.turn || game.mode!=='moving' || g.actorId!==game.active) return true;
+      g=game.tetherGeometry(g.anchorIds,g.width);
+    }
+    const k=AbyssKit.SKILLS[f.key],c=k.color,o=g.center||f.origin,p=reduced?.55:Math.min(1,f.age/f.duration),a=AbilityFX.envelope(f.age/f.duration),r=g.radius||130,u=f.ultimate?1.35:1;
+    ctx.save();this.clip();
+    const activeString=g.shape==='tether' && game.spatial.some(effect=>effect.type==='tether' && effect.ultimate===!!f.ultimate && effect.remaining>0);
+    ctx.globalAlpha*=activeString ? .9 : a;
     // The softly lit footprint uses the exact hit shape and stays below the material.
-    this.geometry(g,c,.08,false);
+    if(k.motif!=='rail' && k.motif!=='fan') this.geometry(g,c,.08,false);
     switch(k.motif){
-      case'cross':case'mirror':case'rail':{
-        for(const [from,to]of g.segments||[]){this.beam(from,to,c,g.width||14,p,k.motif==='rail'?'prism':'prism');}
-        if(k.motif==='mirror')for(const [a,b]of g.segments||[]){this.sprite('mirror',a.x,a.y,75*u,100*u,Math.atan2(b.y-a.y,b.x-a.x),.85,'source-over');this.sprite('shard',b.x,b.y,65,65,p,.65);}
-        this.sprite(k.motif==='cross'?'prismRing':'star',o.x,o.y,140*u,140*u,p*.24,.9);this.impact(f.targets,c,p);break;
+      case'rail':{
+        for(const [from,to] of g.segments) this.silverShot(from,to,p);
+        for(const hit of f.targets) this.silverImpact(hit,p);
+        break;
+      }
+      case'cross':{
+        for(const [from,to] of g.segments) this.beam(from,to,c,g.width,p);
+        this.sprite('prismRing',o.x,o.y,110*u,110*u,p*.18,.95);
+        AbilityFX.sprite('seal',o.x,o.y,69*u,69*u,-p*.24,.68);
+        this.impact(f.targets,c,p);
+        break;
+      }
+      case'mirror':{
+        for(const [a,b] of g.segments){
+          this.beam(a,b,c,g.width,p);
+          this.sprite('mirror',a.x,a.y,75*u,100*u,Math.atan2(b.y-a.y,b.x-a.x),.85,'source-over');
+          this.sprite('shard',b.x,b.y,65,65,p,.65);
+        }
+        this.sprite('star',o.x,o.y,140*u,140*u,p*.24,.9);this.impact(f.targets,c,p);break;
       }
       case'nova':{
         if(f.warning){this.sprite('molten',o.x,o.y,55,65,0,.8);this.sprite('heatRing',o.x,o.y,r*1.9,r*1.9,0,.42);break;}
@@ -70,8 +154,13 @@ const SpatialFX=window.SpatialFX={
         for(const q of g.points||[])this.sprite('molten',q.x,q.y,65,65,p*.2,.8);break;
       }
       case'fan':{
-        for(const [from,to]of g.segments||[]){const ang=Math.atan2(to.y-from.y,to.x-from.x);this.beam(from,to,c,g.width||9,p,'fan');for(let i=0;i<3;i++){const v=(p*1.3+i*.32)%1;this.sprite('fan',from.x+(to.x-from.x)*v,from.y+(to.y-from.y)*v,65,105,ang+Math.PI/2,.8);}}
-        this.impact(f.targets,c,p);break;
+        g.segments.forEach(([from,to],index)=>this.crystalFlight(from,to,p,index));
+        this.sprite('bloom',o.x,o.y,60*u,60*u,-p*.3,.55);
+        for(const hit of f.targets){
+          this.sprite('shard',hit.x,hit.y,44,50,p*.55,.7);
+          AbilityFX.sparks(hit.x,hit.y,p,'#a9dacc',6,28,hit.y);
+        }
+        break;
       }
       case'tether':{
         for(const [from,to]of g.segments||[]){const dx=to.x-from.x,dy=to.y-from.y,len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;

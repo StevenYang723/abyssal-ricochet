@@ -15,13 +15,14 @@ const ArcanaAudio=window.ArcanaAudio={
     cross:[220,'sine',2400,'bell'],guard:[165,'triangle',1700,'bell'],bells:[110,'sine',1900,'bell'],
     tentacles:[48,'sine',750,'wave'],tide:[60,'sine',900,'wave'],eclipse:[38,'sine',600,'choir']
   },
-  play(key,ultimate=false){
+  play(key,ultimate=false,phase){
     if(!sound)return;
     try{
       if(!audioContext)audioContext=new (window.AudioContext||window.webkitAudioContext)();
       if(audioContext.state==='suspended')audioContext.resume();
-      const ac=audioContext,t=ac.currentTime,old=this.last.get(key)||-1;
-      if(t-old<.13)return;this.last.set(key,t);
+      const ac=audioContext,t=ac.currentTime,soundKey=phase==='prepare'?key+'-prepare':key;
+      const old=this.last.get(soundKey)||-1;
+      if(t-old<.13)return;this.last.set(soundKey,t);
       const [freq,wave,filter,kind]=this.profiles[key]||this.profiles.evelyn,span=ultimate?1.55:.65;
       if(!this.noise){this.noise=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);const d=this.noise.getChannelData(0);let low=0;for(let i=0;i<d.length;i++){low=.94*low+.06*(Math.random()*2-1);d[i]=(Math.random()*2-1)*.35+low*2;}}
       const master=ac.createGain(),delay=ac.createDelay(.6),feedback=ac.createGain(),wet=ac.createGain();
@@ -38,14 +39,20 @@ const ArcanaAudio=window.ArcanaAudio={
         g.gain.setValueAtTime(.001,start);g.gain.exponentialRampToValueAtTime(level,start+length*.18);g.gain.exponentialRampToValueAtTime(.001,start+length);
         n.connect(f);f.connect(g);g.connect(master);n.start(start);n.stop(start+length);n.onended=()=>{n.disconnect();f.disconnect();g.disconnect();};
       };
-      gust(t,span*.8,kind==='shot'?.2:.12,['wave','soul','mist'].includes(kind));
-      if(['choir','soul'].includes(kind)){[1,1.5,2].forEach((v,i)=>voice(t+i*.04,freq*v,span,.045/(i+1),'sine',freq*v*1.01));}
-      else if(kind==='bell'||kind==='clock'){[1,2.76,4.07].forEach((v,i)=>voice(t+i*.06,freq*v,span*(1-i*.12),.075/(i+1),'sine',freq*v*.995));}
-      else if(kind==='shot'){for(let i=0;i<(ultimate?3:1);i++){voice(t+i*.13,freq*1.5,.18,.15,'triangle',35);gust(t+i*.13,.18,.18);}}
-      else if(kind==='blade'){voice(t,freq*4,.28,.065,'triangle',freq);voice(t+.12,65,.3,.11,'sine',30);gust(t+.08,.34,.19);}
-      else if(kind==='fall'){gust(t,.42,.2);voice(t+.3,125,.5,.16,'sine',28);voice(t+.34,880,.8,.03,'sine',440);}
-      else{voice(t,freq,span,.1,'sine',Math.max(28,freq*.55));}
-      if(ultimate){voice(t+.22,48,.65,.11,'sine',28);if(['choir','bell','clock'].includes(kind))voice(t+.18,freq*3,1.1,.028,'sine',freq*3);}
+      if(phase==='prepare'){
+        // A brief metal resonance on the caster; the attack sounds at contact.
+        voice(t,freq*2,.13,.06,'sine',freq*3);
+        voice(t+.09,freq*3,.19,.04,'triangle',freq*3.2);
+      }else{
+        gust(t,span*.8,kind==='shot'?.2:.12,['wave','soul','mist'].includes(kind));
+        if(['choir','soul'].includes(kind)){[1,1.5,2].forEach((v,i)=>voice(t+i*.04,freq*v,span,.045/(i+1),'sine',freq*v*1.01));}
+        else if(kind==='bell'||kind==='clock'){[1,2.76,4.07].forEach((v,i)=>voice(t+i*.06,freq*v,span*(1-i*.12),.075/(i+1),'sine',freq*v*.995));}
+        else if(kind==='shot'){for(let i=0;i<(ultimate?3:1);i++){voice(t+i*.13,freq*1.5,.18,.15,'triangle',35);gust(t+i*.13,.18,.18);}}
+        else if(kind==='blade'){voice(t,freq*4,.28,.065,'triangle',freq);voice(t+.12,65,.3,.11,'sine',30);gust(t+.08,.34,.19);}
+        else if(kind==='fall'){gust(t,.42,.2);voice(t+.3,125,.5,.16,'sine',28);voice(t+.34,880,.8,.03,'sine',440);}
+        else{voice(t,freq,span,.1,'sine',Math.max(28,freq*.55));}
+        if(ultimate){voice(t+.22,48,.65,.11,'sine',28);if(['choir','bell','clock'].includes(kind))voice(t+.18,freq*3,1.1,.028,'sine',freq*3);}
+      }
       setTimeout(()=>{master.disconnect();delay.disconnect();feedback.disconnect();wet.disconnect();},(span+1.7)*1000);
     }catch{}
   }
