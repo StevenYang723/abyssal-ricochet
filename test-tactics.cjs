@@ -132,6 +132,17 @@ const trailEvent={type:'skillFx',key:'thalia',origin:{x:170,y:447},targets:[],ti
 renderer.reset();renderer.event(trailEvent);renderer.event(trailEvent);assert.equal(renderer.effects.length,1,'Moving geometry replaces its stale snapshot');
 renderer.drawBudget=160;spatialRenderer.drawSkill({...trailEvent,age:.12,duration:.32},0);assert(renderer.drawBudget>=120,'Long thorn trail preserves texture budget for other effects');
 const oldDrawImage=context.drawImage;let gravityRendered=false;context.drawImage=(texture,...args)=>{if(texture===spatialRenderer.textures[5])gravityRendered=true;oldDrawImage(texture,...args);};spatialRenderer.drawSkill({key:'morrow',origin:{x:250,y:300},targets:[],geometry:{shape:'well',center:{x:250,y:300},radius:155},age:.2,duration:.5},0);context.drawImage=oldDrawImage;assert(gravityRendered,'Gravity remains visible after a long thorn trail');
+// A refuge telegraph paints the danger mask once, through the translucent geometry pass.
+{
+  const sample=battle('maren','whale'),boss=sample.g.enemies[0];
+  boss.moveIndex=2;sample.g.planBoss(boss);sandbox.game=sample.g;
+  const originalFill=context.fill;
+  let maskCount=0;
+  context.fill=(rule,...args)=>{if(rule==='evenodd')maskCount++;return originalFill(rule,...args);};
+  spatialRenderer.plan(boss.plan,.15);
+  context.fill=originalFill;
+  assert.equal(maskCount,1,'no opaque second mask over the arena');
+}
 // Observe the materials actually drawn, including the live string between damage pulses.
 {
   const samples={};

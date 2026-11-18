@@ -18,10 +18,12 @@ Object.assign(Meta,{
     for(const h of game.heroes){h.vx=0;h.vy=0;}
     Object.assign(game.heroes[0],this.practicePoint);if((game.heroes[0].key||game.heroes[0].art)==='sable'){Object.assign(game.heroes[2],{x:170,y:350});Object.assign(game.heroes[3],{x:330,y:350});}game.active=active;game.spatial=[];game.shotKit=null;game.armed=false;game.powered=false;aim=null;
   },
-  openPractice(key,chapter=0,awake){
+  openPractice(key,chapter=0,awake,bossTrial=false){
     const h=AbyssProgress.CATALOG.find(h=>h.key===key);if(!h)return;
     const previewAwake=awake===undefined?this.model.state.owned[key]?.awake||0:awake?1:0,party=[h,...[key==='iris'?'nyra':'iris','lucia','silas','evelyn'].filter(k=>k!==key).slice(0,3).map(k=>AbyssProgress.CATALOG.find(h=>h.key===k))].map((v,i)=>AbyssProgress.stats(v,{level:20,awake:i===0?previewAwake:0,luck:1}));
-    const quest=AbyssProgress.QUESTS.filter(q=>q.chapter===chapter).at(-1),stage=AbyssProgress.waves(quest).at(-1);stage.name='技能演练 · '+h.name;stage.pillars=[];stage.enemies=stage.enemies.map(e=>({...e,hp:50000,damage:300,counter:e.bossKind?1:3}));this.training=true;this.enterBattle({tactical:true,stages:[stage],party,maxHp:40000});this.practicePoint=this.practiceSpot();this.resetPracticeActors(0);for(const boss of game.enemies.filter(e=>e.bossKind))game.planBoss(boss);game.energy=100;uiDirty=true;updateUI();message('援护试射 · 同伴行动，触发试用角色',2200);
+    const quest=AbyssProgress.QUESTS.filter(q=>q.chapter===chapter).at(-1),stage=AbyssProgress.waves(quest).at(-1);stage.name=bossTrial?'首领演练 · '+stage.title:'技能演练 · '+h.name;stage.pillars=[];stage.enemies=stage.enemies.map(e=>({...e,hp:50000,damage:300,counter:e.bossKind?1:3}));this.trainingChapter=bossTrial?chapter:null;this.training=true;this.enterBattle({tactical:true,stages:[stage],party,maxHp:40000});this.practicePoint=this.practiceSpot();this.resetPracticeActors(0);for(const boss of game.enemies.filter(e=>e.bossKind))game.planBoss(boss);game.energy=100;uiDirty=true;updateUI();$('trainingControls').querySelector('span').textContent=bossTrial?'切换招式可查看预警，首领试放可立即结算 · 不耗体力':'援护试射：让同伴行动，触发试用角色的援护 · 不耗体力';
+    if(bossTrial) $('aimHelp').style.display='none';
+    else message('援护试射 · 同伴行动，触发试用角色',2200);
   }
 });
 

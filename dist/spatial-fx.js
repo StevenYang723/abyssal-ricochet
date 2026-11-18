@@ -295,13 +295,6 @@ const SpatialFX=window.SpatialFX={
       ctx.save();ctx.font='11px serif';ctx.fillStyle='#d8ead1';ctx.textAlign='center';ctx.fillText('避潮灯',q.x,q.y+4);ctx.restore();
     }
     if(g.shape==='outside'){const q=g.safe||p.safe||{...g.center,r:g.radius};ctx.save();ctx.fillStyle='#dcebc0';ctx.font='11px serif';ctx.textAlign='center';ctx.fillText('安全区',q.x,q.y+4);ctx.restore();}
-    if(g.shape==='buoys') for(const q of g.points) circle(q.x,q.y,12,c,outline?c:undefined,1);
-    if(g.shape==='refuges'){
-      ctx.beginPath();ctx.rect(12,80,476,455);
-      for(const q of g.zones){ctx.moveTo(q.x+q.r,q.y);ctx.arc(q.x,q.y,q.r,0,2*Math.PI,true);}
-      ctx.fill('evenodd');
-      for(const q of g.zones) circle(q.x,q.y,q.r,null,'#c0f0c9',2);
-    }
     if(g.shape==='annulus'){ctx.save();ctx.fillStyle='#e9d8bd';ctx.font='10px serif';ctx.textAlign='center';ctx.fillText('内圈 / 外圈安全',g.center.x,g.center.y+4);ctx.restore();}
     return true;
   },
